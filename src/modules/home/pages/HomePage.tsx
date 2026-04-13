@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Spinner } from '../../../shared/components/ui/Spinner'
 import { useHomeSummary, useContinueLearning } from '../hooks/useHomeData'
 import { useMetaphysical } from '../../profile/hooks/useProfile'
+import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { useAuthStore } from '../../../shared/stores/auth.store'
 import { WelcomeHeader } from '../components/WelcomeHeader'
 import { StatsRow } from '../components/StatsRow'
@@ -15,17 +16,32 @@ import { CertificateModal } from '../../certificates/components/CertificateModal
 import { PaymentModal } from '../../payments/components/PaymentModal'
 import { MetaphysicalModal } from '../../profile/components/MetaphysicalModal'
 import { CourseModal } from '../../courses/components/CourseModal'
+import { SubmitModal } from '../../assignments/components/SubmitModal'
+import type { AssignmentDetail } from '../../../shared/types'
 
 export default function HomePage() {
   const { data: summary, isLoading: summaryLoading } = useHomeSummary()
   const { data: continueLearning } = useContinueLearning()
   const { data: metaphysical } = useMetaphysical()
+  const { data: allAssignments } = useAssignments()
   const user = useAuthStore((s) => s.user)
 
   const [certOpen, setCertOpen] = useState(false)
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [metaOpen, setMetaOpen] = useState(false)
-  const [lessonCourseId, setLessonCourseId] = useState<string | null>(null)
+  const [courseModalId, setCourseModalId] = useState<string | null>(null)
+  const [courseModalTab, setCourseModalTab] = useState<string | undefined>()
+  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDetail | null>(null)
+
+  const handleOpenCourse = (courseId: string, tab?: string) => {
+    setCourseModalId(courseId)
+    setCourseModalTab(tab)
+  }
+
+  const handleOpenAssignment = (assignmentId: string) => {
+    const assignment = allAssignments?.find((a) => a.id === assignmentId)
+    if (assignment) setSelectedAssignment(assignment)
+  }
 
   if (summaryLoading || !summary) {
     return (
@@ -60,17 +76,23 @@ export default function HomePage() {
       {continueLearning && (
         <HeroContinueWidget
           data={continueLearning}
-          onStartLesson={(courseId) => setLessonCourseId(courseId)}
+          onStartLesson={(courseId) => handleOpenCourse(courseId, 'lessons')}
         />
       )}
 
       <BaZiStrip onOpen={() => setMetaOpen(true)} />
 
-      <RecentCoursesList courses={summary.recent_courses} />
+      <RecentCoursesList
+        courses={summary.recent_courses}
+        onOpenCourse={(courseId) => handleOpenCourse(courseId)}
+      />
 
       <UpcomingEventsList events={summary.upcoming_events} />
 
-      <AssignmentsList assignments={summary.pending_assignments} />
+      <AssignmentsList
+        assignments={summary.pending_assignments}
+        onOpenAssignment={handleOpenAssignment}
+      />
 
       <CertificateModal open={certOpen} onClose={() => setCertOpen(false)} />
       <PaymentModal paymentId={paymentId} onClose={() => setPaymentId(null)} />
@@ -82,9 +104,13 @@ export default function HomePage() {
         studentCode={user?.student_code || null}
       />
       <CourseModal
-        courseId={lessonCourseId}
-        initialTab="lessons"
-        onClose={() => setLessonCourseId(null)}
+        courseId={courseModalId}
+        initialTab={courseModalTab}
+        onClose={() => { setCourseModalId(null); setCourseModalTab(undefined) }}
+      />
+      <SubmitModal
+        assignment={selectedAssignment}
+        onClose={() => setSelectedAssignment(null)}
       />
     </div>
   )

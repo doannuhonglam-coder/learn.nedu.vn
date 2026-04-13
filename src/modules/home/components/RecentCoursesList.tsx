@@ -4,6 +4,7 @@ import { Badge } from '../../../shared/components/ui/Badge'
 
 interface RecentCoursesListProps {
   courses: CourseSummary[]
+  onOpenCourse: (courseId: string) => void
 }
 
 const courseTypeConfig: Record<CourseType, { label: string; icon: string; variant: 'retreat' | 'cohort' | 'on-demand' | 'coaching' }> = {
@@ -13,7 +14,7 @@ const courseTypeConfig: Record<CourseType, { label: string; icon: string; varian
   coaching: { label: '1:1 Coaching', icon: '🤝', variant: 'coaching' },
 }
 
-export function RecentCoursesList({ courses }: RecentCoursesListProps) {
+export function RecentCoursesList({ courses, onOpenCourse }: RecentCoursesListProps) {
   const navigate = useNavigate()
 
   if (courses.length === 0) return null
@@ -30,20 +31,17 @@ export function RecentCoursesList({ courses }: RecentCoursesListProps) {
         {courses.slice(0, 3).map((course) => {
           const config = courseTypeConfig[course.course_type]
           return (
-            <div
+            <button
               key={course.id}
-              className="p-3 bg-gray-50 rounded-xl"
+              onClick={() => onOpenCourse(course.id)}
+              className="w-full p-3 bg-gray-50 rounded-xl text-left hover:bg-gray-100 transition-colors"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <Badge variant={config.variant}>
-                    {config.icon} {config.label}
-                  </Badge>
-                  <p className="text-sm font-medium text-brand-dark mt-1.5 truncate">{course.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{course.instructor_name}</p>
-                </div>
-              </div>
-            </div>
+              <Badge variant={config.variant}>
+                {config.icon} {config.label}
+              </Badge>
+              <p className="text-sm font-medium text-brand-dark mt-1.5 truncate">{course.name}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{course.instructor_name}</p>
+            </button>
           )
         })}
       </div>

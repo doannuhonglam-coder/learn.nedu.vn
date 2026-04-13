@@ -29,9 +29,10 @@ export function UpcomingEventsList({ events }: UpcomingEventsListProps) {
         {events.slice(0, 3).map((event) => {
           const date = new Date(event.start_time)
           return (
-            <div
+            <button
               key={event.id}
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+              onClick={() => navigate('/schedule')}
+              className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-left hover:bg-gray-100 transition-colors"
             >
               <div className="text-center min-w-[40px]">
                 <p className="text-lg font-bold text-brand-dark">{date.getDate()}</p>
@@ -48,7 +49,7 @@ export function UpcomingEventsList({ events }: UpcomingEventsListProps) {
               <Badge variant={eventBadgeVariant[event.event_type]}>
                 {event.event_type === 'online' ? 'Online' : event.event_type === 'offline' ? 'Offline' : 'Retreat'}
               </Badge>
-            </div>
+            </button>
           )
         })}
       </div>

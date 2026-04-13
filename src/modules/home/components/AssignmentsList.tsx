@@ -3,9 +3,10 @@ import { Badge } from '../../../shared/components/ui/Badge'
 
 interface AssignmentsListProps {
   assignments: PendingAssignmentSummary[]
+  onOpenAssignment: (assignmentId: string) => void
 }
 
-export function AssignmentsList({ assignments }: AssignmentsListProps) {
+export function AssignmentsList({ assignments, onOpenAssignment }: AssignmentsListProps) {
   return (
     <div className="px-4 mt-6">
       <div className="flex items-center justify-between mb-3">
@@ -18,9 +19,11 @@ export function AssignmentsList({ assignments }: AssignmentsListProps) {
           {assignments.slice(0, 3).map((a) => {
             const dueDate = new Date(a.due_date)
             return (
-              <div
+              <button
                 key={a.id}
-                className={`p-3 rounded-xl border ${a.is_urgent ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-gray-50'}`}
+                onClick={() => onOpenAssignment(a.id)}
+                className={`w-full p-3 rounded-xl border text-left hover:shadow-sm transition-all
+                  ${a.is_urgent ? 'border-red-200 bg-red-50 hover:bg-red-100' : 'border-gray-100 bg-gray-50 hover:bg-gray-100'}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -32,7 +35,7 @@ export function AssignmentsList({ assignments }: AssignmentsListProps) {
                   </div>
                   {a.is_urgent && <Badge variant="urgent">Sắp hết hạn</Badge>}
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
