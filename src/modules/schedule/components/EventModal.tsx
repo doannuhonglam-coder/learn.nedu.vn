@@ -4,6 +4,31 @@ import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import type { ScheduleEvent } from '../../../shared/types'
 
+function downloadIcs(event: ScheduleEvent) {
+  const formatDate = (d: string) => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Nedu Learn//VI',
+    'BEGIN:VEVENT',
+    `DTSTART:${formatDate(event.start_time)}`,
+    `DTEND:${formatDate(event.end_time)}`,
+    `SUMMARY:${event.title}`,
+    `DESCRIPTION:${event.course_name} - ${event.instructor_name}`,
+    event.location ? `LOCATION:${event.location}` : event.platform ? `LOCATION:${event.platform}` : '',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean).join('\r\n')
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${event.title.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, '_')}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 interface EventModalProps {
   event: ScheduleEvent | null
   onClose: () => void
@@ -110,12 +135,12 @@ export function EventModal({ event, onClose }: EventModalProps) {
         )}
 
         {/* Add to calendar */}
-        <a
-          href={event.ical_url}
+        <button
+          onClick={() => downloadIcs(event)}
           className="block w-full text-center py-2.5 text-sm text-brand-gold font-medium hover:underline"
         >
           Thêm vào lịch 📅
-        </a>
+        </button>
       </div>
     </BottomSheet>
   )
