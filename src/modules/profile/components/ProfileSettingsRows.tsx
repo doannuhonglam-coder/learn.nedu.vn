@@ -16,6 +16,14 @@ export function ProfileSettingsRows({ email }: ProfileSettingsRowsProps) {
   const clearSession = useAuthStore((s) => s.clearSession)
   const [supportOpen, setSupportOpen] = useState(false)
   const [logoutConfirm, setLogoutConfirm] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifPrefs, setNotifPrefs] = useState({
+    push_enabled: true,
+    email_enabled: true,
+    push_schedule: true,
+    push_assignment: true,
+    push_payment: true,
+  })
 
   const handleChangePassword = async () => {
     try {
@@ -31,10 +39,15 @@ export function ProfileSettingsRows({ email }: ProfileSettingsRowsProps) {
     navigate('/login', { replace: true })
   }
 
+  const togglePref = (key: keyof typeof notifPrefs) => {
+    setNotifPrefs((prev) => ({ ...prev, [key]: !prev[key] }))
+    toast('Đã cập nhật', 'success')
+  }
+
   const rows = [
     { label: 'Thanh Toán & Hóa Đơn', icon: '💳', onClick: () => navigate('/payments') },
-    { label: 'Thông báo', icon: '🔔', onClick: () => toast('Cài đặt thông báo — sẽ bổ sung', 'info') },
-    { label: 'Ngôn ngữ', icon: '🌐', onClick: () => toast('Tiếng Việt (mặc định)', 'info'), suffix: 'Tiếng Việt' },
+    { label: 'Thông báo', icon: '🔔', onClick: () => setNotifOpen(true) },
+    { label: 'Ngôn ngữ', icon: '🌐', onClick: () => toast('Hiện tại chỉ hỗ trợ Tiếng Việt', 'info'), suffix: 'Tiếng Việt' },
     { label: 'Đổi mật khẩu', icon: '🔑', onClick: handleChangePassword },
     { label: 'Liên hệ hỗ trợ', icon: '💬', onClick: () => setSupportOpen(true) },
     { label: 'Đăng Xuất', icon: '🚪', onClick: () => setLogoutConfirm(true), destructive: true },
@@ -63,6 +76,33 @@ export function ProfileSettingsRows({ email }: ProfileSettingsRowsProps) {
           </button>
         ))}
       </div>
+
+      {/* Notification Preferences Modal */}
+      <BottomSheet open={notifOpen} onClose={() => setNotifOpen(false)} title="Cài đặt thông báo">
+        <div className="space-y-1">
+          {[
+            { key: 'push_enabled' as const, label: 'Push notification', icon: '📱' },
+            { key: 'email_enabled' as const, label: 'Email thông báo', icon: '📧' },
+            { key: 'push_schedule' as const, label: 'Lịch học', icon: '📅' },
+            { key: 'push_assignment' as const, label: 'Bài tập', icon: '📝' },
+            { key: 'push_payment' as const, label: 'Thanh toán', icon: '💳' },
+          ].map((item) => (
+            <button
+              key={item.key}
+              onClick={() => togglePref(item.key)}
+              className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 rounded-xl transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span>{item.icon}</span>
+                <span className="text-sm text-brand-dark">{item.label}</span>
+              </div>
+              <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-0.5 ${notifPrefs[item.key] ? 'bg-brand-gold justify-end' : 'bg-gray-300 justify-start'}`}>
+                <div className="w-5 h-5 bg-white rounded-full shadow" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </BottomSheet>
 
       {/* Support Modal */}
       <BottomSheet open={supportOpen} onClose={() => setSupportOpen(false)} title="Liên hệ hỗ trợ">

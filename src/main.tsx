@@ -4,23 +4,20 @@ import './index.css'
 import App from './App'
 import { useAuthStore } from './shared/stores/auth.store'
 
-async function enableMocking() {
-  // Always enable mock mode until real API is ready
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 
-  // Only start MSW worker on localhost (it won't work on deployed hosts)
+async function boot() {
+  // On localhost: start MSW service worker for mock API interception
   if (isLocalhost) {
     try {
       const { worker } = await import('./mocks/browser')
-      await worker.start({
-        onUnhandledRequest: 'bypass',
-      })
-    } catch (e) {
-      console.warn('[MSW] Failed to start worker:', e)
+      await worker.start({ onUnhandledRequest: 'bypass' })
+    } catch {
+      // MSW failed — app will use real API or static fallback
     }
   }
 
-  // Auto-login with mock user so we skip the login page
+  // Auto-login with mock user (bypass login page)
   useAuthStore.getState().setSession('mock-jwt-token-123', {
     id: 'stu-001',
     full_name: 'Nguyễn Minh Anh',
@@ -33,12 +30,13 @@ async function enableMocking() {
     created_at: '2026-01-10T08:00:00Z',
     consultant_name: 'Chị Nhí',
   })
-}
 
-enableMocking().then(() => {
+  // Render the app
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
     </StrictMode>,
   )
-})
+}
+
+boot()

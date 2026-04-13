@@ -2,14 +2,18 @@ import { useState } from 'react'
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar'
 import { Spinner } from '../../../shared/components/ui/Spinner'
+import { Badge } from '../../../shared/components/ui/Badge'
 import { useCourseDetail, useCourseLessons, useLessonDetail } from '../hooks/useCourseDetail'
+import { useAssignments } from '../../assignments/hooks/useAssignments'
+import { AssignmentCard } from '../../assignments/components/AssignmentCard'
+import { SubmitModal } from '../../assignments/components/SubmitModal'
 import { LessonList } from './LessonList'
 import { VideoPlayer } from './VideoPlayer'
 import { LessonNoteEditor } from './LessonNoteEditor'
 import { PrepChecklist } from './PrepChecklist'
 import { RetreatSchedule } from './RetreatSchedule'
 import { CountdownTimer } from './CountdownTimer'
-import type { CourseMaterial } from '../../../shared/types'
+import type { CourseMaterial, AssignmentDetail } from '../../../shared/types'
 
 interface CourseModalProps {
   courseId: string | null
@@ -20,8 +24,10 @@ interface CourseModalProps {
 export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps) {
   const { data: course, isLoading } = useCourseDetail(courseId)
   const { data: lessons } = useCourseLessons(courseId)
+  const { data: allAssignments } = useAssignments()
   const [activeTab, setActiveTab] = useState(initialTab || 'overview')
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
+  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDetail | null>(null)
   const { data: lessonDetail } = useLessonDetail(selectedLessonId)
 
   if (!courseId) return null
@@ -87,7 +93,16 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
           )}
 
           {activeTab === 'assignments' && (
-            <p className="text-sm text-gray-400 text-center py-8">Xem bài tập trong tab Bài Tập & Nộp Bài</p>
+            <div className="space-y-3">
+              {(allAssignments || []).filter((a) => a.course_id === courseId).length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-8">Không có bài tập cho khoá này</p>
+              ) : (
+                (allAssignments || []).filter((a) => a.course_id === courseId).map((a) => (
+                  <AssignmentCard key={a.id} assignment={a} onSelect={setSelectedAssignment} />
+                ))
+              )}
+              <SubmitModal assignment={selectedAssignment} onClose={() => setSelectedAssignment(null)} />
+            </div>
           )}
 
           {activeTab === 'materials' && (
@@ -103,11 +118,41 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
           )}
 
           {activeTab === 'coaching' && (
-            <p className="text-sm text-gray-400 text-center py-8">Coaching sessions — Sprint 3</p>
+            <div className="space-y-3">
+              {[
+                { num: 1, title: 'Khám phá giá trị cốt lõi', date: '15/02/2026', status: 'completed' },
+                { num: 2, title: 'Nhận diện pattern cảm xúc', date: '01/03/2026', status: 'completed' },
+                { num: 3, title: 'Xây dựng thói quen mới', date: '15/03/2026', status: 'completed' },
+                { num: 4, title: 'Review & Kế hoạch hành động', date: '22/04/2026', status: 'scheduled' },
+              ].map((s) => (
+                <div key={s.num} className={`p-3 rounded-xl border ${s.status === 'completed' ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-brand-dark">Buổi {s.num}: {s.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{s.date}</p>
+                    </div>
+                    <Badge variant={s.status === 'completed' ? 'on-demand' : 'coaching'}>
+                      {s.status === 'completed' ? '✓ Xong' : 'Sắp tới'}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
           {activeTab === 'notes' && (
-            <p className="text-sm text-gray-400 text-center py-8">Ghi chú coaching — Sprint 3</p>
+            <div className="space-y-3">
+              {[
+                { session: 1, notes: 'Xác định 5 giá trị cốt lõi. Homework: viết nhật ký giá trị 7 ngày.', date: '15/02/2026' },
+                { session: 2, notes: 'Nhận diện 3 pattern cảm xúc chính. Homework: ghi nhận trigger hàng ngày.', date: '01/03/2026' },
+                { session: 3, notes: 'Lên kế hoạch thay đổi 1 thói quen. Homework: thực hành 21 ngày.', date: '15/03/2026' },
+              ].map((n) => (
+                <div key={n.session} className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-xs text-brand-gold font-medium">Buổi {n.session} · {n.date}</p>
+                  <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{n.notes}</p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

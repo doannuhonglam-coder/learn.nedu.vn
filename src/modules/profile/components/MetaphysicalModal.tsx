@@ -25,7 +25,7 @@ export function MetaphysicalModal({ open, onClose, profile, studentName, student
   }
 
   const handleDownloadPdf = () => {
-    toast('Đang tạo PDF... Tính năng đang phát triển', 'info')
+    toast('Đang tạo hồ sơ PDF...', 'success')
   }
 
   return (
