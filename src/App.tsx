@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
 })
 
 const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/login" replace /> },
+  { path: '/', element: <Navigate to="/home" replace /> },
   ...publicRoutes,
   ...protectedRoutes,
 ])
