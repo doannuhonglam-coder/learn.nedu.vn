@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/auth.store'
 import { NotifBadge } from '../../../modules/notifications/components/NotifBadge'
 
@@ -6,6 +7,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ onNotifClick }: TopbarProps) {
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const initials = user?.full_name
     ?.split(' ')
@@ -25,9 +27,9 @@ export function Topbar({ onNotifClick }: TopbarProps) {
             </svg>
             <NotifBadge />
           </button>
-          <div className="w-8 h-8 rounded-full bg-brand-gold text-white text-xs font-semibold flex items-center justify-center">
+          <button onClick={() => navigate('/profile')} className="w-8 h-8 rounded-full bg-brand-gold text-white text-xs font-semibold flex items-center justify-center">
             {initials}
-          </div>
+          </button>
         </div>
       </div>
     </header>
