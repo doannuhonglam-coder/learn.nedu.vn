@@ -14,6 +14,7 @@ import { RecentCoursesList } from '../components/RecentCoursesList'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
 import { PaymentModal } from '../../payments/components/PaymentModal'
 import { MetaphysicalModal } from '../../profile/components/MetaphysicalModal'
+import { CourseModal } from '../../courses/components/CourseModal'
 
 export default function HomePage() {
   const { data: summary, isLoading: summaryLoading } = useHomeSummary()
@@ -24,6 +25,7 @@ export default function HomePage() {
   const [certOpen, setCertOpen] = useState(false)
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [metaOpen, setMetaOpen] = useState(false)
+  const [lessonCourseId, setLessonCourseId] = useState<string | null>(null)
 
   if (summaryLoading || !summary) {
     return (
@@ -55,7 +57,12 @@ export default function HomePage() {
         />
       )}
 
-      {continueLearning && <HeroContinueWidget data={continueLearning} />}
+      {continueLearning && (
+        <HeroContinueWidget
+          data={continueLearning}
+          onStartLesson={(courseId) => setLessonCourseId(courseId)}
+        />
+      )}
 
       <BaZiStrip onOpen={() => setMetaOpen(true)} />
 
@@ -73,6 +80,11 @@ export default function HomePage() {
         profile={metaphysical || null}
         studentName={user?.full_name || ''}
         studentCode={user?.student_code || null}
+      />
+      <CourseModal
+        courseId={lessonCourseId}
+        initialTab="lessons"
+        onClose={() => setLessonCourseId(null)}
       />
     </div>
   )

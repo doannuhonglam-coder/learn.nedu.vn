@@ -4,9 +4,10 @@ import { Button } from '../../../shared/components/ui/Button'
 
 interface HeroContinueWidgetProps {
   data: ContinueLearning
+  onStartLesson: (courseId: string) => void
 }
 
-export function HeroContinueWidget({ data }: HeroContinueWidgetProps) {
+export function HeroContinueWidget({ data, onStartLesson }: HeroContinueWidgetProps) {
   return (
     <div className="mx-4 mt-4 p-4 bg-gradient-to-br from-brand-dark to-gray-800 rounded-2xl text-white">
       <p className="text-[11px] text-gray-400 uppercase tracking-wide">Tiếp tục học</p>
@@ -16,7 +17,7 @@ export function HeroContinueWidget({ data }: HeroContinueWidgetProps) {
       <p className="text-xs text-gray-400 mt-2">
         Bài tiếp: {data.next_lesson.title}
       </p>
-      <Button size="sm" className="mt-3 w-full">
+      <Button size="sm" className="mt-3 w-full" onClick={() => onStartLesson(data.course_id)}>
         Vào bài học ngay
       </Button>
     </div>
