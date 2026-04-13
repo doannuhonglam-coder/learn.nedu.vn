@@ -158,7 +158,9 @@ const mockCertificates = [
 
 // Route matcher: maps API paths to mock data
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getMockResponse(path: string, _method: string): any {
+export function getMockResponse(rawPath: string, _method: string): any {
+  // Strip query string for matching
+  const path = rawPath.split('?')[0]
   if (path === '/home/summary') return mockHomeSummary
   if (path === '/home/continue-learning') return mockContinueLearning
   if (path === '/enrollments') return mockEnrollments
