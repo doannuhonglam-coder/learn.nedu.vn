@@ -7,10 +7,24 @@ import { useNotifications } from '../hooks/useNotifications'
 import { notificationsService } from '../services/notifications.service'
 import { useAuthStore } from '../../../shared/stores/auth.store'
 import { useNavigate } from 'react-router-dom'
+import type { NotificationSummary } from '../../../shared/types'
 
 interface NotifModalProps {
   open: boolean
   onClose: () => void
+}
+
+// Map notification types to routes when action_url is null
+function getNotifRoute(notif: NotificationSummary): string {
+  if (notif.action_url) return notif.action_url
+  switch (notif.type) {
+    case 'payment': return '/payments'
+    case 'assignment': return '/courses'
+    case 'schedule': return '/schedule'
+    case 'certificate': return '/profile'
+    case 'system': return '/home'
+    default: return '/home'
+  }
 }
 
 export function NotifModal({ open, onClose }: NotifModalProps) {
@@ -28,11 +42,10 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
     },
   })
 
-  const handleItemClick = (actionUrl: string | null) => {
-    if (actionUrl) {
-      navigate(actionUrl)
-      onClose()
-    }
+  const handleItemClick = (notif: NotificationSummary) => {
+    const route = getNotifRoute(notif)
+    navigate(route)
+    onClose()
   }
 
   const unreadCount = notifications?.filter((n) => !n.is_read).length || 0
@@ -63,9 +76,9 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
             {notifications.map((notif) => (
               <button
                 key={notif.id}
-                onClick={() => handleItemClick(notif.action_url)}
+                onClick={() => handleItemClick(notif)}
                 className={`w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors
-                  ${!notif.is_read ? 'bg-amber-50' : 'bg-white hover:bg-gray-50'}`}
+                  ${!notif.is_read ? 'bg-amber-50 hover:bg-amber-100' : 'bg-white hover:bg-gray-50'}`}
               >
                 <span className="text-lg flex-shrink-0">{notif.icon}</span>
                 <div className="flex-1 min-w-0">
