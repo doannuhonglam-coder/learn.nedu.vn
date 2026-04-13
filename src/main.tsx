@@ -5,10 +5,11 @@ import App from './App'
 import { useAuthStore } from './shared/stores/auth.store'
 
 async function enableMocking() {
-  if (import.meta.env.VITE_USE_MOCK !== 'true') return
+  // Always enable mock mode until real API is ready
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 
   // Only start MSW worker on localhost (it won't work on deployed hosts)
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  if (isLocalhost) {
     try {
       const { worker } = await import('./mocks/browser')
       await worker.start({

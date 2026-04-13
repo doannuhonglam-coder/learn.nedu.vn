@@ -1,12 +1,11 @@
 import { useAuthStore } from '../stores/auth.store'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 const IS_LOCALHOST = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
-// When mock mode is on but NOT on localhost, MSW service worker won't work.
-// Fall back to static mock data directly.
-const needsMockFallback = USE_MOCK && !IS_LOCALHOST
+// On deployed hosts (Vercel etc.), MSW won't work — use static mock data.
+// On localhost, MSW handles mocking via service worker.
+const needsMockFallback = !IS_LOCALHOST
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
