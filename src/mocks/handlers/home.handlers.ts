@@ -1,0 +1,147 @@
+import { http, HttpResponse } from 'msw'
+
+const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
+
+export const homeHandlers = [
+  http.get(`${API}/api/v1/home/summary`, () => {
+    return HttpResponse.json({
+      student: {
+        id: 'stu-001',
+        full_name: 'Nguyễn Minh Anh',
+        status_label: 'Học viên Nedu',
+      },
+      stats: {
+        active_courses: 3,
+        completion_percent: 42,
+        certificates_count: 1,
+      },
+      noi_status: {
+        status: 'active',
+        label: 'N-ơi · Đang hoạt động',
+        checkins: 12,
+        streak_weeks: 4,
+        ninety_day_percent: 67,
+      },
+      pending_payment: {
+        payment_id: 'pay-001',
+        enrollment_id: 'enr-001',
+        course_name: 'Lãnh Đạo Cảm Xúc Mùa 12',
+        installment_label: 'Đợt 2',
+        amount: 5500000,
+        due_date: '2026-04-25',
+        status: 'pending',
+        status_label: 'Chờ thanh toán',
+      },
+      upcoming_events: [
+        {
+          id: 'evt-001',
+          title: 'Live Q&A: Cảm Xúc Trong Lãnh Đạo',
+          event_type: 'online',
+          start_time: '2026-04-15T19:00:00+07:00',
+          end_time: '2026-04-15T20:30:00+07:00',
+          platform: 'Zoom',
+          location: null,
+        },
+        {
+          id: 'evt-002',
+          title: 'Retreat Tĩnh Tâm Đà Lạt',
+          event_type: 'retreat',
+          start_time: '2026-05-01T08:00:00+07:00',
+          end_time: '2026-05-03T17:00:00+07:00',
+          platform: null,
+          location: 'Đà Lạt',
+        },
+        {
+          id: 'evt-003',
+          title: 'Workshop Offline: Hơi Thở & Năng Lượng',
+          event_type: 'offline',
+          start_time: '2026-04-20T09:00:00+07:00',
+          end_time: '2026-04-20T12:00:00+07:00',
+          platform: null,
+          location: 'Nedu HQ - Q3, HCM',
+        },
+      ],
+      pending_assignments: [
+        {
+          id: 'asg-001',
+          title: 'Bài tập: Nhật ký cảm xúc tuần 3',
+          course_name: 'Lãnh Đạo Cảm Xúc Mùa 12',
+          due_date: '2026-04-16T23:59:00+07:00',
+          status: 'not_submitted',
+          is_urgent: true,
+        },
+        {
+          id: 'asg-002',
+          title: 'Reflection: Giá trị cốt lõi của bạn',
+          course_name: 'Con Số & Cuộc Bạn',
+          due_date: '2026-04-22T23:59:00+07:00',
+          status: 'not_submitted',
+          is_urgent: false,
+        },
+      ],
+      recent_courses: [
+        {
+          id: 'crs-001',
+          name: 'Lãnh Đạo Cảm Xúc Mùa 12',
+          slug: 'lcm-12',
+          course_type: 'cohort',
+          status: 'published',
+          instructor_name: 'Chị Nhí Lê',
+          thumbnail_url: null,
+          retreat_date: null,
+          retreat_countdown_seconds: null,
+          cohort_start_date: '2026-03-01',
+          cohort_end_date: '2026-06-01',
+          coaching_sessions_completed: null,
+          coaching_sessions_total: null,
+          metaphysical_match_score: 85,
+        },
+        {
+          id: 'crs-002',
+          name: 'Retreat Tĩnh Tâm Đà Lạt',
+          slug: 'retreat-dalat-2026',
+          course_type: 'retreat',
+          status: 'published',
+          instructor_name: 'Chị Nhí Lê',
+          thumbnail_url: null,
+          retreat_date: '2026-05-01',
+          retreat_countdown_seconds: 1555200,
+          cohort_start_date: null,
+          cohort_end_date: null,
+          coaching_sessions_completed: null,
+          coaching_sessions_total: null,
+          metaphysical_match_score: null,
+        },
+        {
+          id: 'crs-003',
+          name: 'Con Số & Cuộc Bạn',
+          slug: 'cscb-on-demand',
+          course_type: 'on_demand',
+          status: 'published',
+          instructor_name: 'Thầy Minh',
+          thumbnail_url: null,
+          retreat_date: null,
+          retreat_countdown_seconds: null,
+          cohort_start_date: null,
+          cohort_end_date: null,
+          coaching_sessions_completed: null,
+          coaching_sessions_total: null,
+          metaphysical_match_score: null,
+        },
+      ],
+    })
+  }),
+
+  http.get(`${API}/api/v1/home/continue-learning`, () => {
+    return HttpResponse.json({
+      enrollment_id: 'enr-001',
+      course_id: 'crs-001',
+      course_name: 'Lãnh Đạo Cảm Xúc Mùa 12',
+      course_type: 'cohort',
+      instructor_name: 'Chị Nhí Lê',
+      current_module: 'Module 3: Cảm Xúc & Giao Tiếp',
+      progress_percent: 42,
+      next_lesson: { id: 'les-007', title: 'Bài 7: Lắng nghe chủ động' },
+    })
+  }),
+]
