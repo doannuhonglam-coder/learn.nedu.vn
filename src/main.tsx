@@ -7,10 +7,17 @@ import { useAuthStore } from './shared/stores/auth.store'
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCK !== 'true') return
 
-  const { worker } = await import('./mocks/browser')
-  await worker.start({
-    onUnhandledRequest: 'bypass',
-  })
+  // Only start MSW worker on localhost (it won't work on deployed hosts)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    try {
+      const { worker } = await import('./mocks/browser')
+      await worker.start({
+        onUnhandledRequest: 'bypass',
+      })
+    } catch (e) {
+      console.warn('[MSW] Failed to start worker:', e)
+    }
+  }
 
   // Auto-login with mock user so we skip the login page
   useAuthStore.getState().setSession('mock-jwt-token-123', {

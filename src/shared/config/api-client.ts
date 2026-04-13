@@ -1,12 +1,26 @@
 import { useAuthStore } from '../stores/auth.store'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
+const IS_LOCALHOST = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+
+// When mock mode is on but NOT on localhost, MSW service worker won't work.
+// Fall back to static mock data directly.
+const needsMockFallback = USE_MOCK && !IS_LOCALHOST
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  // If deployed with mock mode (e.g. Vercel), return static data
+  if (needsMockFallback) {
+    const { getMockResponse } = await import('../../mocks/mock-data')
+    const mockData = getMockResponse(path, options.method || 'GET')
+    if (mockData !== null) return mockData as T
+    return undefined as T
+  }
+
   const { body, headers: customHeaders, ...rest } = options
   const token = useAuthStore.getState().accessToken
 
