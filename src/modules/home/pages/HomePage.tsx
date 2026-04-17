@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Spinner } from '../../../shared/components/ui/Spinner'
 import { useHomeSummary, useContinueLearning } from '../hooks/useHomeData'
 import { useMetaphysical } from '../../profile/hooks/useProfile'
 import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { useAuthStore } from '../../../shared/stores/auth.store'
 import { WelcomeHeader } from '../components/WelcomeHeader'
-import { StatsRow } from '../components/StatsRow'
 import { PaymentAlertBanner } from '../components/PaymentAlertBanner'
 import { HeroContinueWidget } from '../components/HeroContinueWidget'
 import { BaZiStrip } from '../components/BaZiStrip'
@@ -20,6 +20,7 @@ import { SubmitModal } from '../../assignments/components/SubmitModal'
 import type { AssignmentDetail } from '../../../shared/types'
 
 export default function HomePage() {
+  const navigate = useNavigate()
   const { data: summary, isLoading: summaryLoading } = useHomeSummary()
   const { data: continueLearning } = useContinueLearning()
   const { data: metaphysical } = useMetaphysical()
@@ -57,12 +58,8 @@ export default function HomePage() {
         fullName={summary.student.full_name}
         statusLabel={summary.student.status_label}
         noiStatus={summary.noi_status}
-      />
-
-      <StatsRow
-        activeCourses={summary.stats.active_courses}
-        completionPercent={summary.stats.completion_percent}
-        certificatesCount={summary.stats.certificates_count}
+        stats={summary.stats}
+        onCoursesClick={() => navigate('/courses')}
         onCertificatesClick={() => setCertOpen(true)}
       />
 

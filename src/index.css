@@ -1,33 +1,103 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'DM Sans', sans-serif;
   --font-display: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  --color-brand-gold: #C8A951;
-  --color-brand-gold-dark: #B8933E;
-  --color-brand-dark: #1A1A2E;
+  /* NEDU BRAND PALETTE v6 — Gold + Obsidian */
+  --color-bg: #FAFAF8;
+  --color-surface: #FFFFFF;
+  --color-s2: #F5F3EF;
+
+  --color-gold: #F5B731;
+  --color-gold-d: #D4920A;
+  --color-gold-text: #8A6A00;
+  --color-al: #FEF4D6;
+
+  --color-obs: #1A1816;
+  --color-obs2: #2C2A26;
+  --color-obs3: #4A4540;
+
+  --color-ink: #1A1816;
+  --color-i2: #4A4540;
+  --color-i3: #8A8480;
+
+  --color-border: rgba(26, 24, 22, 0.10);
+
+  --color-terra: #C0392B;
+  --color-tl: #FDECEA;
+
+  --color-noi: #6B3FA0;
+  --color-noil: #F3EEF9;
+  --color-nl: #EDE9FE;
+
+  /* Legacy mappings for existing components */
+  --color-brand-gold: #F5B731;
+  --color-brand-gold-dark: #D4920A;
+  --color-brand-dark: #1A1816;
   --color-brand-purple: #6B3FA0;
-  --color-brand-green: #10B981;
+  --color-brand-green: #D4920A;
   --color-brand-blue: #3B82F6;
-  --color-brand-yellow: #F59E0B;
-  --color-brand-red: #EF4444;
+  --color-brand-yellow: #F5B731;
+  --color-brand-red: #C0392B;
 
-  --color-retreat: #8B5CF6;
-  --color-cohort: #3B82F6;
-  --color-on-demand: #10B981;
-  --color-coaching: #F59E0B;
+  --color-retreat: #6B3FA0;
+  --color-cohort: #2C2A26;
+  --color-on-demand: #D4920A;
+  --color-coaching: #D4920A;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background-color: #F9FAFB;
-  color: #1A1A2E;
+  background-color: #FAFAF8;
+  color: #1A1816;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 .font-display {
   font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Decorative gold circles for dark cards */
+.deco-circles::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -20px;
+  width: 140px;
+  height: 140px;
+  background: rgba(245, 183, 49, 0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.deco-circles::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  right: 30px;
+  width: 100px;
+  height: 100px;
+  background: rgba(245, 183, 49, 0.04);
+  border-radius: 50%;
+  pointer-events: none;
 }

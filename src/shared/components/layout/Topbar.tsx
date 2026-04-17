@@ -17,17 +17,49 @@ export function Topbar({ onNotifClick }: TopbarProps) {
     .toUpperCase() || '?'
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
-      <div className="flex items-center justify-between h-14 px-4 max-w-[420px] mx-auto">
-        <span className="font-display font-bold text-lg text-brand-dark">Nedu</span>
+    <header
+      className="sticky top-0 z-50 border-b"
+      style={{
+        background: 'rgba(250,250,248,0.94)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderColor: 'rgba(26,24,22,0.10)',
+      }}
+    >
+      <div className="flex items-center justify-between h-[60px] px-[18px] max-w-[420px] mx-auto">
+        <div className="font-display font-bold text-[18px] text-obs">
+          nedu<span className="text-gold">·learn</span>
+        </div>
         <div className="flex items-center gap-3">
-          <button onClick={onNotifClick} className="relative p-1">
-            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          <button
+            onClick={onNotifClick}
+            className="relative w-9 h-9 bg-surface border border-border rounded-full flex items-center justify-center"
+          >
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+              <path
+                d="M18 11C18 8.1 16.2 5.6 13.5 4.7V4C13.5 3.2 12.8 2.5 12 2.5C11.2 2.5 10.5 3.2 10.5 4V4.7C7.8 5.6 6 8.1 6 11V16L4 18H20L18 16V11Z"
+                stroke="#1A1816"
+                strokeWidth="1.75"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 20C10 21.1 10.9 22 12 22C13.1 22 14 21.1 14 20"
+                stroke="#1A1816"
+                strokeWidth="1.75"
+                fill="none"
+              />
             </svg>
             <NotifBadge />
           </button>
-          <button onClick={() => navigate('/profile')} className="w-8 h-8 rounded-full bg-brand-gold text-white text-xs font-semibold flex items-center justify-center">
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold border-2 border-white"
+            style={{
+              background: 'linear-gradient(135deg,#F5B731,#D4920A)',
+              color: '#1A1816',
+              boxShadow: '0 2px 8px rgba(245,183,49,0.35)',
+            }}
+          >
             {initials}
           </button>
         </div>

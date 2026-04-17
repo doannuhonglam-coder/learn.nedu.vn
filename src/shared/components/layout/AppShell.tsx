@@ -8,9 +8,9 @@ export function AppShell() {
   const [notifOpen, setNotifOpen] = useState(false)
 
   return (
-    <div className="min-h-screen max-w-[420px] mx-auto bg-white">
+    <div className="min-h-screen max-w-[420px] mx-auto" style={{ background: '#FAFAF8' }}>
       <Topbar onNotifClick={() => setNotifOpen(true)} />
-      <main className="pb-20">
+      <main className="pb-24">
         <Outlet />
       </main>
       <BottomNav />
