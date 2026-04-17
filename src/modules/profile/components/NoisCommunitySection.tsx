@@ -85,6 +85,26 @@ export function NoisCommunitySection({ noiStatus }: NoisCommunitySectionProps) {
             </div>
           </div>
         )}
+
+        {noiStatus && (
+          <div className="relative z-[1] mt-3 flex items-center gap-2">
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-extrabold flex-shrink-0"
+              style={{
+                background: 'linear-gradient(135deg,#D4A8FF,#9C6DDB)',
+                color: '#1A1816',
+              }}
+            >
+              Hà
+            </div>
+            <div
+              className="text-[11px]"
+              style={{ color: 'rgba(255,255,255,0.65)' }}
+            >
+              Buddy: Nguyễn Thị Hà · Check-in lần cuối 2 ngày trước
+            </div>
+          </div>
+        )}
       </button>
     </div>
   )
