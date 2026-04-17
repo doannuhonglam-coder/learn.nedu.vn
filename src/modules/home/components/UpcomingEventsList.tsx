@@ -3,6 +3,7 @@ import type { UpcomingEventSummary } from '../../../shared/types'
 
 interface UpcomingEventsListProps {
   events: UpcomingEventSummary[]
+  onOpenEvent: (eventId: string) => void
 }
 
 const badgeStyles = {
@@ -11,7 +12,7 @@ const badgeStyles = {
   retreat: { bg: '#EDE9FE', color: '#5B21B6', label: 'Retreat' },
 } as const
 
-export function UpcomingEventsList({ events }: UpcomingEventsListProps) {
+export function UpcomingEventsList({ events, onOpenEvent }: UpcomingEventsListProps) {
   const navigate = useNavigate()
 
   if (events.length === 0) return null
@@ -33,8 +34,8 @@ export function UpcomingEventsList({ events }: UpcomingEventsListProps) {
           return (
             <button
               key={event.id}
-              onClick={() => navigate('/schedule')}
-              className="w-full bg-surface rounded-lg px-[14px] py-3 flex items-center gap-3 text-left"
+              onClick={() => onOpenEvent(event.id)}
+              className="w-full bg-surface rounded-lg px-[14px] py-3 flex items-center gap-3 text-left transition-opacity active:opacity-80"
               style={{
                 border: `1px solid ${event.event_type === 'retreat' ? 'rgba(91,33,182,0.15)' : 'rgba(26,24,22,0.10)'}`,
                 boxShadow: '0 1px 8px rgba(26,24,22,0.05)',

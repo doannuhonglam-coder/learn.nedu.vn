@@ -4,6 +4,7 @@ import { Spinner } from '../../../shared/components/ui/Spinner'
 import { useHomeSummary, useContinueLearning } from '../hooks/useHomeData'
 import { useMetaphysical } from '../../profile/hooks/useProfile'
 import { useAssignments } from '../../assignments/hooks/useAssignments'
+import { useScheduleEvents } from '../../schedule/hooks/useSchedule'
 import { useAuthStore } from '../../../shared/stores/auth.store'
 import { WelcomeHeader } from '../components/WelcomeHeader'
 import { PaymentAlertBanner } from '../components/PaymentAlertBanner'
@@ -18,7 +19,8 @@ import { PaymentModal } from '../../payments/components/PaymentModal'
 import { MetaphysicalModal } from '../../profile/components/MetaphysicalModal'
 import { CourseModal } from '../../courses/components/CourseModal'
 import { SubmitModal } from '../../assignments/components/SubmitModal'
-import type { AssignmentDetail } from '../../../shared/types'
+import { EventModal } from '../../schedule/components/EventModal'
+import type { AssignmentDetail, ScheduleEvent } from '../../../shared/types'
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -26,6 +28,8 @@ export default function HomePage() {
   const { data: continueLearning } = useContinueLearning()
   const { data: metaphysical } = useMetaphysical()
   const { data: allAssignments } = useAssignments()
+  const now = new Date()
+  const { data: allEvents } = useScheduleEvents(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
   const user = useAuthStore((s) => s.user)
 
   const [certOpen, setCertOpen] = useState(false)
@@ -34,6 +38,12 @@ export default function HomePage() {
   const [courseModalId, setCourseModalId] = useState<string | null>(null)
   const [courseModalTab, setCourseModalTab] = useState<string | undefined>()
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDetail | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null)
+
+  const handleOpenEvent = (eventId: string) => {
+    const event = allEvents?.find((e) => e.id === eventId)
+    if (event) setSelectedEvent(event)
+  }
 
   const handleOpenCourse = (courseId: string, tab?: string) => {
     setCourseModalId(courseId)
@@ -85,7 +95,10 @@ export default function HomePage() {
         onOpenCourse={(courseId) => handleOpenCourse(courseId)}
       />
 
-      <UpcomingEventsList events={summary.upcoming_events} />
+      <UpcomingEventsList
+        events={summary.upcoming_events}
+        onOpenEvent={handleOpenEvent}
+      />
 
       <AssignmentsList
         assignments={summary.pending_assignments}
@@ -112,6 +125,7 @@ export default function HomePage() {
         assignment={selectedAssignment}
         onClose={() => setSelectedAssignment(null)}
       />
+      <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </div>
   )
 }

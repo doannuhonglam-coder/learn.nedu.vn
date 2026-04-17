@@ -20,22 +20,49 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-[420px] bg-white rounded-t-2xl max-h-[92vh] flex flex-col animate-[slideUp_0.3s_ease-out]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          {title && <h2 className="font-display font-semibold text-lg text-brand-dark">{title}</h2>}
+    <div className="fixed inset-0 z-[100] flex items-end justify-center">
+      <div
+        className="absolute inset-0"
+        style={{ background: 'rgba(26,24,22,0.55)', backdropFilter: 'blur(4px)' }}
+        onClick={onClose}
+      />
+      <div
+        className="relative w-full max-w-[420px] bg-surface rounded-t-[20px] flex flex-col animate-[slideUp_0.35s_cubic-bezier(.25,.46,.45,.94)]"
+        style={{ maxHeight: '92vh', minHeight: 0 }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-0 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(26,24,22,0.10)' }} />
+        </div>
+
+        {/* Header — sticky */}
+        <div
+          className="flex items-center justify-between px-[18px] pt-4 pb-[14px] flex-shrink-0 sticky top-0 z-[1]"
+          style={{ borderBottom: '1px solid rgba(26,24,22,0.10)', background: '#FFFFFF' }}
+        >
+          {title && (
+            <h2 className="font-display font-semibold text-[17px] text-ink">{title}</h2>
+          )}
           <button
             onClick={onClose}
-            className="ml-auto p-1 text-gray-400 hover:text-gray-600"
+            className="ml-auto w-[30px] h-[30px] rounded-full flex items-center justify-center text-[16px] leading-none"
+            style={{ background: '#F5F3EF' }}
             aria-label="Đóng"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ×
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+
+        {/* Scrollable content */}
+        <div
+          className="overflow-y-auto overscroll-contain px-[18px] py-4"
+          style={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {children}
         </div>
       </div>
