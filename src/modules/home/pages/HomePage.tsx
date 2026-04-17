@@ -12,6 +12,7 @@ import { BaZiStrip } from '../components/BaZiStrip'
 import { UpcomingEventsList } from '../components/UpcomingEventsList'
 import { AssignmentsList } from '../components/AssignmentsList'
 import { RecentCoursesList } from '../components/RecentCoursesList'
+import { CertificatesList } from '../components/CertificatesList'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
 import { PaymentModal } from '../../payments/components/PaymentModal'
 import { MetaphysicalModal } from '../../profile/components/MetaphysicalModal'
@@ -90,6 +91,8 @@ export default function HomePage() {
         assignments={summary.pending_assignments}
         onOpenAssignment={handleOpenAssignment}
       />
+
+      <CertificatesList onViewAll={() => setCertOpen(true)} />
 
       <CertificateModal open={certOpen} onClose={() => setCertOpen(false)} />
       <PaymentModal paymentId={paymentId} onClose={() => setPaymentId(null)} />
