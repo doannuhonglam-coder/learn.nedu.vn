@@ -9,6 +9,7 @@ import { MetaphysicalStrip } from '../components/MetaphysicalStrip'
 import { MetaphysicalModal } from '../components/MetaphysicalModal'
 import { ProfileInfoSection } from '../components/ProfileInfoSection'
 import { ProfileSettingsRows } from '../components/ProfileSettingsRows'
+import { ComingSoonSection } from '../components/ComingSoonSection'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
 
 export default function ProfilePage() {
@@ -50,6 +51,8 @@ export default function ProfilePage() {
       <ProfileInfoSection profile={profile} />
 
       <ProfileSettingsRows email={profile.email} />
+
+      <ComingSoonSection />
 
       <MetaphysicalModal
         open={metaModalOpen}
