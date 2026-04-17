@@ -1,15 +1,14 @@
-import { useNavigate } from 'react-router-dom'
-import type { StudentProfile, StreakStats } from '../../../shared/types'
+import type { StudentProfile } from '../../../shared/types'
+import { toast } from '../../../shared/components/ui/Toast'
 
 interface ProfileHeaderProps {
   profile: StudentProfile
-  streak: StreakStats | null
   stats: { courses: number; certificates: number; progress: number }
+  onCoursesClick: () => void
   onCertificatesClick: () => void
 }
 
-export function ProfileHeader({ profile, streak, stats, onCertificatesClick }: ProfileHeaderProps) {
-  const navigate = useNavigate()
+export function ProfileHeader({ profile, stats, onCoursesClick, onCertificatesClick }: ProfileHeaderProps) {
   const initials = profile.full_name
     .split(' ')
     .map((w) => w[0])
@@ -18,40 +17,65 @@ export function ProfileHeader({ profile, streak, stats, onCertificatesClick }: P
     .toUpperCase()
 
   return (
-    <div className="px-4 pt-4 pb-2">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-brand-gold text-white text-xl font-bold flex items-center justify-center flex-shrink-0">
+    <div className="px-4">
+      <div className="text-center pt-5 pb-4">
+        <button
+          onClick={() => toast('📸 Tính năng đổi ảnh đang phát triển', 'info')}
+          className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center text-[28px] font-bold text-white border-[3px] border-white"
+          style={{
+            background: 'linear-gradient(135deg, #F5B731, #D4920A)',
+            boxShadow: '0 4px 20px rgba(26,24,22,0.18)',
+          }}
+        >
           {initials}
+        </button>
+        <div className="font-display text-[20px] font-semibold text-ink mb-[3px]">
+          {profile.full_name}
         </div>
-        <div>
-          <h2 className="font-display font-semibold text-lg text-brand-dark">{profile.full_name}</h2>
-          <p className="text-xs text-gray-500">{profile.student_code || 'Học viên Nedu'}</p>
-          {streak && streak.current_streak_weeks > 0 && (
-            <p className="text-xs text-brand-gold font-medium mt-0.5">
-              🔥 {streak.current_streak_weeks} tuần liên tiếp
-            </p>
-          )}
+        <div className="text-[12px] text-i3 mb-4">
+          Học viên · Nedu Education{profile.student_code ? ` · ID: ${profile.student_code}` : ''}
         </div>
-      </div>
 
-      <div className="grid grid-cols-3 gap-3 mt-4">
-        <button
-          onClick={() => navigate('/courses')}
-          className="bg-gray-50 rounded-xl py-2.5 px-2 text-center hover:bg-gray-100 transition-colors"
-        >
-          <p className="text-lg font-bold text-brand-dark">{stats.courses}</p>
-          <p className="text-[10px] text-gray-500">Khoá học</p>
-        </button>
-        <button
-          onClick={onCertificatesClick}
-          className="bg-gray-50 rounded-xl py-2.5 px-2 text-center hover:bg-gray-100 transition-colors"
-        >
-          <p className="text-lg font-bold text-brand-dark">{stats.certificates}</p>
-          <p className="text-[10px] text-gray-500">Chứng chỉ</p>
-        </button>
-        <div className="bg-gray-50 rounded-xl py-2.5 px-2 text-center">
-          <p className="text-lg font-bold text-brand-dark">{stats.progress}%</p>
-          <p className="text-[10px] text-gray-500">Tiến độ</p>
+        <div className="flex gap-2.5">
+          <button
+            onClick={onCoursesClick}
+            className="flex-1 bg-surface rounded-lg p-3 text-center"
+            style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+          >
+            <div className="font-display text-[18px] font-bold text-gold-d">{stats.courses}</div>
+            <div
+              className="text-[10px] text-i3 font-medium uppercase mt-0.5"
+              style={{ letterSpacing: '0.04em' }}
+            >
+              Khoá học
+            </div>
+          </button>
+          <button
+            onClick={onCertificatesClick}
+            className="flex-1 bg-surface rounded-lg p-3 text-center"
+            style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+          >
+            <div className="font-display text-[18px] font-bold text-gold-d">{stats.certificates}</div>
+            <div
+              className="text-[10px] text-i3 font-medium uppercase mt-0.5"
+              style={{ letterSpacing: '0.04em' }}
+            >
+              Chứng chỉ
+            </div>
+          </button>
+          <button
+            onClick={onCoursesClick}
+            className="flex-1 bg-surface rounded-lg p-3 text-center"
+            style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+          >
+            <div className="font-display text-[18px] font-bold text-gold-d">{stats.progress}%</div>
+            <div
+              className="text-[10px] text-i3 font-medium uppercase mt-0.5"
+              style={{ letterSpacing: '0.04em' }}
+            >
+              Tiến độ
+            </div>
+          </button>
         </div>
       </div>
     </div>

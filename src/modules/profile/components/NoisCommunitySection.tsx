@@ -7,34 +7,85 @@ interface NoisCommunitySectionProps {
 
 export function NoisCommunitySection({ noiStatus }: NoisCommunitySectionProps) {
   return (
-    <div className="mx-4 mt-4">
-      <h3 className="font-display font-semibold text-sm text-brand-dark mb-2">N-ơi Community</h3>
-      {noiStatus ? (
-        <div className="bg-purple-50 rounded-xl p-4">
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div>
-              <p className="text-lg font-bold text-brand-purple">{noiStatus.checkins}</p>
-              <p className="text-[10px] text-gray-500">Check-in</p>
+    <div className="px-4">
+      <button
+        onClick={() => toast('🔮 N-ơi Community · Sắp ra mắt', 'info')}
+        className="w-full relative overflow-hidden rounded-[14px] px-[18px] py-4 text-left"
+        style={{
+          background: 'linear-gradient(135deg,#6B3FA0,#4A2870)',
+          boxShadow: '0 4px 20px rgba(107,63,160,0.2)',
+        }}
+      >
+        <div
+          className="absolute -top-[30px] -right-[20px] w-[100px] h-[100px] rounded-full pointer-events-none"
+          style={{ background: 'rgba(255,255,255,0.06)' }}
+        />
+
+        <div className="relative z-[1] flex items-center gap-3 mb-3">
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.15)' }}
+          >
+            🔮
+          </div>
+          <div>
+            <div
+              className="font-mono text-[10px] font-bold uppercase mb-[3px]"
+              style={{ color: 'rgba(255,255,255,0.55)', letterSpacing: '0.06em' }}
+            >
+              N-ơi · Cộng Đồng
             </div>
-            <div>
-              <p className="text-lg font-bold text-brand-purple">{noiStatus.ninety_day_percent}%</p>
-              <p className="text-[10px] text-gray-500">90 ngày</p>
-            </div>
-            <div>
-              <p className="text-lg font-bold text-brand-purple">{noiStatus.streak_weeks}</p>
-              <p className="text-[10px] text-gray-500">Tuần liên tiếp</p>
+            <div className="font-display text-[15px] font-semibold text-white">
+              {noiStatus ? noiStatus.label : 'Khám phá'}
             </div>
           </div>
         </div>
-      ) : (
-        <button
-          onClick={() => toast('N-ơi là cộng đồng dành cho học viên tốt nghiệp Nedu · Sắp ra mắt', 'info')}
-          className="w-full p-4 bg-gray-50 rounded-xl text-left"
-        >
-          <p className="text-sm text-gray-600">🔮 Khám phá N-ơi →</p>
-          <p className="text-xs text-gray-400 mt-0.5">Cộng đồng dành cho học viên Nedu</p>
-        </button>
-      )}
+
+        {noiStatus && (
+          <div className="relative z-[1] flex gap-2">
+            <div
+              className="flex-1 rounded-lg px-2.5 py-2 text-center"
+              style={{ background: 'rgba(255,255,255,0.10)' }}
+            >
+              <div className="font-display text-[15px] font-bold text-white">{noiStatus.checkins}</div>
+              <div
+                className="text-[9px] uppercase mt-0.5"
+                style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}
+              >
+                Check-in
+              </div>
+            </div>
+            <div
+              className="flex-1 rounded-lg px-2.5 py-2 text-center"
+              style={{ background: 'rgba(255,255,255,0.10)' }}
+            >
+              <div className="font-display text-[15px] font-bold text-white">
+                {noiStatus.streak_weeks}
+              </div>
+              <div
+                className="text-[9px] uppercase mt-0.5"
+                style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}
+              >
+                Tuần liên tiếp
+              </div>
+            </div>
+            <div
+              className="flex-1 rounded-lg px-2.5 py-2 text-center"
+              style={{ background: 'rgba(255,255,255,0.10)' }}
+            >
+              <div className="font-display text-[15px] font-bold text-white">
+                {noiStatus.ninety_day_percent}%
+              </div>
+              <div
+                className="text-[9px] uppercase mt-0.5"
+                style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}
+              >
+                90 ngày
+              </div>
+            </div>
+          </div>
+        )}
+      </button>
     </div>
   )
 }

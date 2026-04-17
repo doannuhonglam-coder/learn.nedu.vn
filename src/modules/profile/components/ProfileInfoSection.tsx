@@ -6,21 +6,33 @@ interface ProfileInfoSectionProps {
 
 export function ProfileInfoSection({ profile }: ProfileInfoSectionProps) {
   const fields = [
-    { label: 'Họ tên', value: profile.full_name },
+    { label: 'Họ và tên', value: profile.full_name },
     { label: 'Email', value: profile.email },
-    { label: 'Số điện thoại', value: profile.phone || '—' },
+    { label: 'Điện thoại', value: profile.phone || '—' },
+    { label: 'Nguồn biết đến', value: 'YouTube NhiLe' },
     { label: 'Tư vấn viên', value: profile.consultant_name || '—' },
     { label: 'Ngày đăng ký', value: new Date(profile.created_at).toLocaleDateString('vi-VN') },
   ]
 
   return (
-    <div className="mx-4 mt-4">
-      <h3 className="font-display font-semibold text-sm text-brand-dark mb-2">Thông tin cơ bản</h3>
-      <div className="bg-gray-50 rounded-xl divide-y divide-gray-100">
-        {fields.map((field) => (
-          <div key={field.label} className="flex items-center justify-between px-4 py-3">
-            <p className="text-xs text-gray-400">{field.label}</p>
-            <p className="text-sm text-brand-dark">{field.value}</p>
+    <div className="px-4 mt-3">
+      <div
+        className="bg-surface rounded-[14px] px-4 py-1"
+        style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+      >
+        {fields.map((field, i) => (
+          <div
+            key={field.label}
+            className="flex items-start justify-between py-2.5"
+            style={i < fields.length - 1 ? { borderBottom: '1px solid rgba(26,24,22,0.10)' } : {}}
+          >
+            <div className="text-[12px] text-i3 font-medium">{field.label}</div>
+            <div
+              className="text-[12px] text-ink font-semibold text-right max-w-[60%]"
+              style={{ lineHeight: 1.4 }}
+            >
+              {field.value}
+            </div>
           </div>
         ))}
       </div>

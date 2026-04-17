@@ -1,19 +1,20 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Spinner } from '../../../shared/components/ui/Spinner'
-import { useProfile, useMetaphysical, useStreak } from '../hooks/useProfile'
+import { useProfile, useMetaphysical } from '../hooks/useProfile'
 import { useHomeSummary } from '../../home/hooks/useHomeData'
 import { ProfileHeader } from '../components/ProfileHeader'
+import { NoisCommunitySection } from '../components/NoisCommunitySection'
 import { MetaphysicalStrip } from '../components/MetaphysicalStrip'
 import { MetaphysicalModal } from '../components/MetaphysicalModal'
-import { NoisCommunitySection } from '../components/NoisCommunitySection'
 import { ProfileInfoSection } from '../components/ProfileInfoSection'
 import { ProfileSettingsRows } from '../components/ProfileSettingsRows'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
 
 export default function ProfilePage() {
+  const navigate = useNavigate()
   const { data: profile, isLoading: profileLoading } = useProfile()
   const { data: metaphysical } = useMetaphysical()
-  const { data: streak } = useStreak()
   const { data: homeSummary } = useHomeSummary()
   const [metaModalOpen, setMetaModalOpen] = useState(false)
   const [certModalOpen, setCertModalOpen] = useState(false)
@@ -30,21 +31,21 @@ export default function ProfilePage() {
     <div className="pb-6">
       <ProfileHeader
         profile={profile}
-        streak={streak || null}
         stats={{
           courses: homeSummary?.stats.active_courses || 0,
           certificates: homeSummary?.stats.certificates_count || 0,
           progress: homeSummary?.stats.completion_percent || 0,
         }}
+        onCoursesClick={() => navigate('/courses')}
         onCertificatesClick={() => setCertModalOpen(true)}
       />
+
+      <NoisCommunitySection noiStatus={homeSummary?.noi_status || null} />
 
       <MetaphysicalStrip
         profile={metaphysical || null}
         onOpen={() => setMetaModalOpen(true)}
       />
-
-      <NoisCommunitySection noiStatus={homeSummary?.noi_status || null} />
 
       <ProfileInfoSection profile={profile} />
 
