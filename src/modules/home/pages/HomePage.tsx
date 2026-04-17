@@ -7,6 +7,7 @@ import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { useScheduleEvents } from '../../schedule/hooks/useSchedule'
 import { useAuthStore } from '../../../shared/stores/auth.store'
 import { WelcomeHeader } from '../components/WelcomeHeader'
+import { OverAllocateWarning } from '../components/OverAllocateWarning'
 import { PaymentAlertBanner } from '../components/PaymentAlertBanner'
 import { HeroContinueWidget } from '../components/HeroContinueWidget'
 import { BaZiStrip } from '../components/BaZiStrip'
@@ -65,6 +66,8 @@ export default function HomePage() {
 
   return (
     <div className="pb-6">
+      <OverAllocateWarning activeCourses={summary.stats.active_courses} />
+
       <WelcomeHeader
         fullName={summary.student.full_name}
         statusLabel={summary.student.status_label}

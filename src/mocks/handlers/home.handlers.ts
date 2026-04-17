@@ -11,7 +11,7 @@ export const homeHandlers = [
         status_label: 'Học viên Nedu',
       },
       stats: {
-        active_courses: 3,
+        active_courses: 4,
         completion_percent: 42,
         certificates_count: 1,
       },

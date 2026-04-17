@@ -15,7 +15,7 @@ const mockUser = {
 
 const mockHomeSummary = {
   student: { id: 'stu-001', full_name: 'Nguyễn Minh Anh', status_label: 'Học viên Nedu' },
-  stats: { active_courses: 3, completion_percent: 42, certificates_count: 1 },
+  stats: { active_courses: 4, completion_percent: 42, certificates_count: 1 },
   noi_status: { status: 'active', label: 'N-ơi · Đang hoạt động', checkins: 12, streak_weeks: 4, ninety_day_percent: 67 },
   pending_payment: {
     payment_id: 'pay-001', enrollment_id: 'enr-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12',
