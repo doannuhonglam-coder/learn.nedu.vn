@@ -1,8 +1,19 @@
 // src/mocks/init.ts
-// Gate MSW bằng VITE_ENABLE_MOCKING. Call từ main.tsx TRƯỚC render.
+// MSW chỉ chạy trên localhost (service worker cần HTTPS/localhost).
+// Trên Vercel: api-client fallback sang static mock-data.ts.
 export async function enableMocking() {
+  const isLocalhost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1')
+
+  if (!isLocalhost) return
   if (import.meta.env.VITE_ENABLE_MOCKING !== 'true') return
-  const { worker } = await import('./browser')
-  // bypass: Supabase auth + static assets không đi qua MSW
-  return worker.start({ onUnhandledRequest: 'bypass' })
+
+  try {
+    const { worker } = await import('./browser')
+    await worker.start({ onUnhandledRequest: 'bypass' })
+  } catch (e) {
+    console.warn('[MSW] Failed to start worker:', e)
+  }
 }

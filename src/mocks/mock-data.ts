@@ -165,6 +165,19 @@ export function getMockResponse(rawPath: string, _method: string): any {
   if (path === '/home/continue-learning') return mockContinueLearning
   if (path === '/enrollments') return mockEnrollments
   if (path === '/auth/me') return mockUser
+  if (path === '/auth/login') return {
+    access_token: 'mock-jwt-token-123',
+    refresh_token: 'mock-refresh-token',
+    expires_at: new Date(Date.now() + 3600000).toISOString(),
+    user: mockUser,
+  }
+  if (path === '/auth/activate') return {
+    access_token: 'mock-jwt-token-456',
+    refresh_token: 'mock-refresh-token-2',
+    expires_at: new Date(Date.now() + 3600000).toISOString(),
+    user: { ...mockUser, activated_at: new Date().toISOString() },
+  }
+  if (path === '/auth/forgot-password') return { message: 'Email sent' }
   if (path === '/profile') return mockUser
   if (path === '/profile/metaphysical') return mockMetaphysical
   if (path === '/profile/streak') return mockStreak

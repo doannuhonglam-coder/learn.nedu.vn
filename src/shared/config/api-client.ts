@@ -1,19 +1,17 @@
 import { useAuthStore } from '../stores/auth.store'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-const IS_LOCALHOST = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
-// On deployed hosts (Vercel etc.), MSW won't work — use static mock data.
-// On localhost, MSW handles mocking via service worker.
-const needsMockFallback = !IS_LOCALHOST
+// Until real backend is ready, always use static mock data.
+// When backend is live, remove this fallback (or guard with env flag).
+const USE_STATIC_MOCK = true
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  // If deployed with mock mode (e.g. Vercel), return static data
-  if (needsMockFallback) {
+  if (USE_STATIC_MOCK) {
     const { getMockResponse } = await import('../../mocks/mock-data')
     const mockData = getMockResponse(path, options.method || 'GET')
     if (mockData !== null) return mockData as T
