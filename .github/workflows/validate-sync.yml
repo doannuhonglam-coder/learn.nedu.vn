@@ -1,0 +1,95 @@
+name: Validate Incoming Sync
+
+on:
+  pull_request:
+    branches: [incoming]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: validate-sync
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect API Contract changes
+        id: api_contract_check
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+            | grep -E '.*/mocks/.*' || echo "")
+
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "api_contract_changed=true" >> $GITHUB_OUTPUT
+            echo "⚠️  API Contract thay đổi:"
+            echo "$CHANGED_FILES"
+          else
+            echo "api_contract_changed=false" >> $GITHUB_OUTPUT
+            echo "✅ Không có thay đổi trong */mocks/"
+          fi
+
+      - name: Gửi thông báo Telegram — API Contract thay đổi
+        if: steps.api_contract_check.outputs.api_contract_changed == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          REPO="${{ github.repository }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_URL="https://github.com/${REPO}/commit/${COMMIT_SHA}"
+          PR_URL="https://github.com/${REPO}/pull/${PR_NUMBER}"
+          ACTOR="${{ github.actor }}"
+
+          SAFE_REPO=$(echo "$REPO" | sed 's/[_*[\]()~`>#+\-=|{}.!]/\\&/g')
+          SAFE_TITLE=$(echo "$PR_TITLE" | sed 's/[_*[\]()~`>#+\-=|{}.!]/\\&/g')
+          SAFE_ACTOR=$(echo "$ACTOR" | sed 's/[_*[\]()~`>#+\-=|{}.!]/\\&/g')
+
+          MESSAGE="🔔 *API Contract thay đổi — Cần kiểm tra*
+
+📦 *Repo:* \`${SAFE_REPO}\`
+🔀 *PR \#${PR_NUMBER}:* ${SAFE_TITLE}
+👤 *Author:* ${SAFE_ACTOR}
+🔑 *Commit:* [${SHORT_SHA}](${COMMIT_URL})
+🔗 *Pull Request:* [PR \#${PR_NUMBER}](${PR_URL})
+
+⚠️ Folder \`mocks/\` có thay đổi — đây là vùng chứa *API Contract* \(mock data \+ handlers\)\.
+📋 *Data Guard* và *Team IT* vui lòng review trước khi merge\."
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"chat_id\": \"${TELEGRAM_CHAT_ID}\",
+              \"text\": \"${MESSAGE}\",
+              \"parse_mode\": \"MarkdownV2\",
+              \"disable_web_page_preview\": false
+            }"
+
+          echo "✅ Đã gửi thông báo Telegram."
+
+      - name: Comment kết quả lên PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const apiChanged = '${{ steps.api_contract_check.outputs.api_contract_changed }}'
+            const commitUrl  = `https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}`
+            const shortSha   = '${{ github.event.pull_request.head.sha }}'.substring(0, 7)
+
+            const body = apiChanged === 'true'
+              ? `## ⚠️ API Contract thay đổi\nCommit: [\`${shortSha}\`](${commitUrl})\n\n> Folder \`mocks/\` có thay đổi — đã thông báo **Data Guard** & **Team IT** qua Telegram.`
+              : `## ✅ API Contract không thay đổi\nCommit: [\`${shortSha}\`](${commitUrl})`
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            })
