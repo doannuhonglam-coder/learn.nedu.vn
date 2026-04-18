@@ -2,22 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { enableMocking } from './mocks/init'
 import { useAuthStore } from './shared/stores/auth.store'
 
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+async function bootstrap() {
+  await enableMocking()
 
-async function boot() {
-  // On localhost: start MSW service worker for mock API interception
-  if (isLocalhost) {
-    try {
-      const { worker } = await import('./mocks/browser')
-      await worker.start({ onUnhandledRequest: 'bypass' })
-    } catch {
-      // MSW failed — app will use real API or static fallback
-    }
-  }
-
-  // Auto-login with mock user (bypass login page)
+  // Auto-login with mock user (bypass login page) — giữ cho UI cũ vẫn chạy
   useAuthStore.getState().setSession('mock-jwt-token-123', {
     id: 'stu-001',
     full_name: 'Nguyễn Minh Anh',
@@ -31,7 +22,6 @@ async function boot() {
     consultant_name: 'Chị Nhí',
   })
 
-  // Render the app
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
@@ -39,4 +29,4 @@ async function boot() {
   )
 }
 
-boot()
+bootstrap()
