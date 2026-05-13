@@ -11,6 +11,7 @@ import { ProfileInfoSection } from '../components/ProfileInfoSection'
 import { ProfileSettingsRows } from '../components/ProfileSettingsRows'
 import { ComingSoonSection } from '../components/ComingSoonSection'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
+import { CertificatesList } from '../../certificates/components/CertificatesList'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
@@ -47,6 +48,8 @@ export default function ProfilePage() {
         profile={metaphysical || null}
         onOpen={() => setMetaModalOpen(true)}
       />
+
+      <CertificatesList onViewAll={() => setCertModalOpen(true)} />
 
       <ProfileInfoSection profile={profile} />
 

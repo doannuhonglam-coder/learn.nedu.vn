@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { toast } from '../../../shared/components/ui/Toast'
-import { certificatesService } from '../../certificates/services/certificates.service'
+import { certificatesService } from '../services/certificates.service'
 import type { CertificateSummary } from '../../../shared/types'
 
 interface CertificatesListProps {
@@ -109,7 +109,7 @@ export function CertificatesList({ onViewAll }: CertificatesListProps) {
           Chứng Chỉ & Thành Tích
         </h2>
         <button onClick={onViewAll} className="text-[12px] font-medium text-gold-d">
-          Xem tất cả →
+          Xem tất cả {unlocked.length} chứng chỉ →
         </button>
       </div>
 
@@ -125,7 +125,7 @@ export function CertificatesList({ onViewAll }: CertificatesListProps) {
             <button
               key={cert.id}
               onClick={() => handleCertClick(cert)}
-              className="flex-shrink-0 w-[140px] rounded-[14px] px-3 py-[14px] text-center relative overflow-hidden transition-transform active:scale-95"
+              className="flex-shrink-0 w-[160px] rounded-[14px] px-3 py-[14px] text-center relative overflow-hidden transition-transform active:scale-95"
               style={{
                 background: 'linear-gradient(135deg, #1A1816, #2C2A26)',
               }}
@@ -138,10 +138,10 @@ export function CertificatesList({ onViewAll }: CertificatesListProps) {
                 <CertIcon type={iconType} id={cert.id} />
               </div>
               <div
-                className="relative z-[1] text-[11px] font-semibold text-white leading-[1.35] mb-1"
-                style={{ minHeight: 30 }}
+                className="relative z-[1] font-display text-[12px] font-semibold text-white leading-[1.35] mb-1"
+                style={{ minHeight: 32 }}
               >
-                {cert.title}
+                {cert.title.replace('Chứng chỉ ', '')}
               </div>
               {dateStr && (
                 <div
@@ -159,7 +159,7 @@ export function CertificatesList({ onViewAll }: CertificatesListProps) {
           <button
             key={cert.id}
             onClick={() => handleCertClick(cert)}
-            className="flex-shrink-0 w-[140px] rounded-[14px] px-3 py-[14px] text-center transition-opacity"
+            className="flex-shrink-0 w-[160px] rounded-[14px] px-3 py-[14px] text-center transition-opacity flex flex-col items-center justify-center"
             style={{
               background: '#F5F3EF',
               border: '1.5px dashed rgba(26,24,22,0.15)',
