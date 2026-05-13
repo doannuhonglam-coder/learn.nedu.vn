@@ -1,25 +1,38 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Spinner } from '../../../shared/components/ui/Spinner'
-import { useProfile, useMetaphysical } from '../hooks/useProfile'
+import { useProfile, useMetaphysical, useStreak } from '../hooks/useProfile'
 import { useHomeSummary } from '../../home/hooks/useHomeData'
+import { useAuthStore } from '../../../shared/stores/auth.store'
 import { ProfileHeader } from '../components/ProfileHeader'
 import { NoisCommunitySection } from '../components/NoisCommunitySection'
-import { MetaphysicalStrip } from '../components/MetaphysicalStrip'
+import { JourneySection } from '../components/JourneySection'
+import { AccountSection } from '../components/AccountSection'
 import { MetaphysicalModal } from '../components/MetaphysicalModal'
-import { ProfileInfoSection } from '../components/ProfileInfoSection'
-import { ProfileSettingsRows } from '../components/ProfileSettingsRows'
-import { ComingSoonSection } from '../components/ComingSoonSection'
+import { SettingsModal } from '../components/SettingsModal'
+import { SupportModal } from '../components/SupportModal'
+import { StreakModal } from '../components/StreakModal'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
-import { CertificatesList } from '../../certificates/components/CertificatesList'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
+  const clearSession = useAuthStore((s) => s.clearSession)
   const { data: profile, isLoading: profileLoading } = useProfile()
   const { data: metaphysical } = useMetaphysical()
+  const { data: streak } = useStreak()
   const { data: homeSummary } = useHomeSummary()
   const [metaModalOpen, setMetaModalOpen] = useState(false)
   const [certModalOpen, setCertModalOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [supportOpen, setSupportOpen] = useState(false)
+  const [streakOpen, setStreakOpen] = useState(false)
+
+  const handleLogout = () => {
+    if (confirm('Đăng xuất?')) {
+      clearSession()
+      navigate('/login', { replace: true })
+    }
+  }
 
   if (profileLoading || !profile) {
     return (
@@ -28,6 +41,8 @@ export default function ProfilePage() {
       </div>
     )
   }
+
+  const streakDays = (streak?.current_streak_weeks || 0) * 7 + 7 // approx
 
   return (
     <div className="pb-6">
@@ -44,19 +59,52 @@ export default function ProfilePage() {
 
       <NoisCommunitySection noiStatus={homeSummary?.noi_status || null} />
 
-      <MetaphysicalStrip
-        profile={metaphysical || null}
-        onOpen={() => setMetaModalOpen(true)}
+      <JourneySection
+        metaphysical={metaphysical || null}
+        streakDays={streakDays}
+        onOpenBaZi={() => setMetaModalOpen(true)}
+        onOpenCertificates={() => setCertModalOpen(true)}
+        onOpenStreak={() => setStreakOpen(true)}
       />
 
-      <CertificatesList onViewAll={() => setCertModalOpen(true)} />
+      <AccountSection
+        pendingPayment={homeSummary?.pending_payment || null}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSupport={() => setSupportOpen(true)}
+      />
 
-      <ProfileInfoSection profile={profile} />
+      {/* Logout */}
+      <div className="px-4 mt-5">
+        <button
+          onClick={handleLogout}
+          className="w-full py-3.5 rounded-[14px] text-[14px] font-semibold transition-colors"
+          style={{
+            background: '#FFFFFF',
+            color: '#1A1816',
+            border: '1.5px solid rgba(26,24,22,0.10)',
+          }}
+        >
+          Đăng xuất
+        </button>
+      </div>
 
-      <ProfileSettingsRows email={profile.email} />
+      {/* Footer */}
+      <div className="text-center mt-5">
+        <p
+          className="font-mono text-[11px] text-i3"
+          style={{ letterSpacing: '0.04em' }}
+        >
+          learn.nedu.vn · v10
+        </p>
+        <p
+          className="font-mono text-[11px] text-i3 mt-1"
+          style={{ letterSpacing: '0.04em' }}
+        >
+          Phiên bản 2.4.0
+        </p>
+      </div>
 
-      <ComingSoonSection />
-
+      {/* Modals */}
       <MetaphysicalModal
         open={metaModalOpen}
         onClose={() => setMetaModalOpen(false)}
@@ -64,8 +112,18 @@ export default function ProfilePage() {
         studentName={profile.full_name}
         studentCode={profile.student_code}
       />
-
       <CertificateModal open={certModalOpen} onClose={() => setCertModalOpen(false)} />
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        profile={profile}
+      />
+      <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
+      <StreakModal
+        open={streakOpen}
+        onClose={() => setStreakOpen(false)}
+        currentStreakDays={streakDays}
+      />
     </div>
   )
 }
