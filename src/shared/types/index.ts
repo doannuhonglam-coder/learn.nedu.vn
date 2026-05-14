@@ -61,11 +61,14 @@ export interface CourseSummary {
   instructor_name: string
   thumbnail_url: string | null
   retreat_date: string | null
+  retreat_end_date?: string | null
   retreat_countdown_seconds: number | null
   cohort_start_date: string | null
   cohort_end_date: string | null
   coaching_sessions_completed: number | null
   coaching_sessions_total: number | null
+  current_module?: number | null
+  total_modules?: number | null
   metaphysical_match_score: number | null
 }
 

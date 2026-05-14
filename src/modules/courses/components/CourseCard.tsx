@@ -1,5 +1,4 @@
 import type { EnrollmentSummary, CourseType } from '../../../shared/types'
-import { Badge } from '../../../shared/components/ui/Badge'
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar'
 import { CountdownTimer } from './CountdownTimer'
 import { toast } from '../../../shared/components/ui/Toast'
@@ -9,11 +8,28 @@ interface CourseCardProps {
   onOpenCourse: (courseId: string, tab?: string) => void
 }
 
-const typeConfig: Record<CourseType, { label: string; icon: string; variant: 'retreat' | 'cohort' | 'on-demand' | 'coaching' }> = {
-  retreat: { label: 'Retreat', icon: '🌿', variant: 'retreat' },
-  cohort: { label: 'Cohort', icon: '👥', variant: 'cohort' },
-  on_demand: { label: 'On-demand', icon: '🎥', variant: 'on-demand' },
-  coaching: { label: '1:1 Coaching', icon: '🤝', variant: 'coaching' },
+const typeConfig: Record<CourseType, { label: string; icon: string; bg: string; color: string }> = {
+  retreat: { label: 'Retreat', icon: '🌿', bg: '#EDE9FE', color: '#5B21B6' },
+  cohort: { label: 'Cohort', icon: '👥', bg: '#F5F3EF', color: '#2C2A26' },
+  on_demand: { label: 'On-demand', icon: '🎥', bg: '#FEF4D6', color: '#D4920A' },
+  coaching: { label: '1:1 Coaching', icon: '🤝', bg: '#FEF4D6', color: '#D4920A' },
+}
+
+function formatShortDate(iso: string): string {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+function formatFullDate(iso: string): string {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+}
+
+function calcNights(startISO: string, endISO: string): { days: number; nights: number } {
+  const start = new Date(startISO)
+  const end = new Date(endISO)
+  const days = Math.round((end.getTime() - start.getTime()) / 86400000) + 1
+  return { days, nights: Math.max(days - 1, 0) }
 }
 
 export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
@@ -22,47 +38,73 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
 
   return (
     <div
-      className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+      className="p-4 bg-surface rounded-2xl cursor-pointer transition-shadow hover:shadow-md"
+      style={{
+        border: '1px solid rgba(26,24,22,0.10)',
+        boxShadow: '0 1px 8px rgba(26,24,22,0.05)',
+      }}
       onClick={() => onOpenCourse(course.id)}
     >
       <div className="flex items-start justify-between gap-2">
-        <Badge variant={config.variant}>
+        <span
+          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-[3px] rounded-full"
+          style={{ background: config.bg, color: config.color, letterSpacing: '0.03em' }}
+        >
           {config.icon} {config.label}
-        </Badge>
+        </span>
         {enrollment.status === 'completed' && (
-          <span className="text-xs text-brand-green font-medium">✓ Hoàn thành</span>
+          <span className="text-[10px] font-semibold text-gold-d">✓ Hoàn thành</span>
         )}
       </div>
 
-      <h3 className="text-sm font-semibold text-brand-dark mt-2">{course.name}</h3>
-      <p className="text-xs text-gray-500 mt-0.5">{course.instructor_name}</p>
+      <h3 className="font-display text-[14px] font-semibold text-ink mt-2 leading-[1.35]">
+        {course.name}
+      </h3>
+      <p className="text-[11px] text-i3 mt-0.5">{course.instructor_name}</p>
 
-      {/* Retreat variant */}
-      {course.course_type === 'retreat' && (
+      {/* Retreat: date range + days/nights + countdown */}
+      {course.course_type === 'retreat' && course.retreat_date && (
         <div className="mt-3">
-          {course.retreat_date && (
-            <p className="text-xs text-gray-500">
-              📍 {course.retreat_date && new Date(course.retreat_date).toLocaleDateString('vi-VN')}
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <p className="text-[12px] font-semibold text-ink">
+              📅 {formatShortDate(course.retreat_date)}
+              {course.retreat_end_date && ` – ${formatFullDate(course.retreat_end_date)}`}
             </p>
-          )}
-          <div className="mt-1.5">
-            <CountdownTimer targetDate={course.retreat_date || ''} />
+            {course.retreat_end_date && (
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                style={{ background: '#EDE9FE', color: '#5B21B6' }}
+              >
+                {(() => {
+                  const { days, nights } = calcNights(course.retreat_date, course.retreat_end_date)
+                  return `${days} ngày ${nights} đêm`
+                })()}
+              </span>
+            )}
+          </div>
+          <div>
+            <CountdownTimer targetDate={course.retreat_date} />
           </div>
           <button
             onClick={(e) => {
               e.stopPropagation()
               onOpenCourse(course.id, 'prep')
             }}
-            className="mt-2 text-xs text-brand-gold font-medium"
+            className="mt-2 text-[11px] text-gold-d font-medium"
           >
             Danh sách cần chuẩn bị →
           </button>
         </div>
       )}
 
-      {/* Cohort variant */}
+      {/* Cohort: module progress + progress bar + match */}
       {course.course_type === 'cohort' && (
         <div className="mt-3">
+          {course.current_module && course.total_modules && (
+            <p className="text-[11px] text-i2 font-medium mb-1.5">
+              📚 Module {course.current_module}/{course.total_modules}
+            </p>
+          )}
           <ProgressBar percent={enrollment.progress_percent} showLabel />
           {course.metaphysical_match_score && course.metaphysical_match_score > 70 && (
             <button
@@ -70,26 +112,31 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
                 e.stopPropagation()
                 toast('Dựa trên hồ sơ BaZi + Nine Star Ki của bạn', 'info')
               }}
-              className="mt-1.5"
+              className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-[3px] rounded-full"
+              style={{ background: '#EDE9FE', color: '#6B3FA0' }}
             >
-              <Badge variant="match">🔮 Phù hợp {course.metaphysical_match_score}%</Badge>
+              🔮 Phù hợp {course.metaphysical_match_score}%
             </button>
           )}
         </div>
       )}
 
-      {/* On-demand variant */}
+      {/* On-demand: module progress + progress bar */}
       {course.course_type === 'on_demand' && (
         <div className="mt-3">
+          {course.current_module && course.total_modules && (
+            <p className="text-[11px] text-i2 font-medium mb-1.5">
+              📚 Module {course.current_module}/{course.total_modules} · Tự học
+            </p>
+          )}
           <ProgressBar percent={enrollment.progress_percent} showLabel />
-          <p className="text-xs text-gray-500 mt-1">Tự học</p>
           {enrollment.status === 'active' && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onOpenCourse(course.id, 'lessons')
               }}
-              className="mt-2 text-xs text-brand-gold font-medium"
+              className="mt-2 text-[11px] text-gold-d font-medium"
             >
               Tiếp tục học →
             </button>
@@ -97,13 +144,17 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
         </div>
       )}
 
-      {/* Coaching variant */}
+      {/* Coaching: session count + progress bar */}
       {course.course_type === 'coaching' && (
         <div className="mt-3">
-          <p className="text-xs text-gray-600">
-            Buổi {course.coaching_sessions_completed}/{course.coaching_sessions_total}
-            {' · '}Còn {(course.coaching_sessions_total || 0) - (course.coaching_sessions_completed || 0)} buổi
+          <p className="text-[11px] text-i2 font-medium mb-1.5">
+            🤝 Buổi {course.coaching_sessions_completed}/{course.coaching_sessions_total}
+            {' · '}
+            <span className="text-i3 font-normal">
+              Còn {(course.coaching_sessions_total || 0) - (course.coaching_sessions_completed || 0)} buổi
+            </span>
           </p>
+          <ProgressBar percent={enrollment.progress_percent} showLabel />
         </div>
       )}
     </div>
