@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
-import { ProgressBar } from '../../../shared/components/ui/ProgressBar'
 import { Spinner } from '../../../shared/components/ui/Spinner'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { useCourseDetail, useCourseLessons, useLessonDetail } from '../hooks/useCourseDetail'
+import { useEnrollments } from '../hooks/useCourses'
 import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { AssignmentCard } from '../../assignments/components/AssignmentCard'
 import { SubmitModal } from '../../assignments/components/SubmitModal'
@@ -12,7 +12,7 @@ import { VideoPlayer } from './VideoPlayer'
 import { LessonNoteEditor } from './LessonNoteEditor'
 import { PrepChecklist } from './PrepChecklist'
 import { RetreatSchedule } from './RetreatSchedule'
-import { CountdownTimer } from './CountdownTimer'
+import { OverviewTab } from './OverviewTab'
 import type { CourseMaterial, AssignmentDetail } from '../../../shared/types'
 
 interface CourseModalProps {
@@ -24,6 +24,9 @@ interface CourseModalProps {
 export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps) {
   const { data: course, isLoading } = useCourseDetail(courseId)
   const { data: lessons } = useCourseLessons(courseId)
+  const { data: enrollments } = useEnrollments()
+  const enrollment = enrollments?.find((e) => e.course.id === courseId)
+  const progressPercent = enrollment?.progress_percent ?? 0
   const { data: allAssignments } = useAssignments()
   const [activeTab, setActiveTab] = useState(initialTab || 'overview')
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
@@ -56,7 +59,18 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
 
           {/* Tab content */}
           {activeTab === 'overview' && (
-            <OverviewTab course={course} />
+            <OverviewTab
+              course={course}
+              progressPercent={progressPercent}
+              onStartLesson={() => {
+                setActiveTab('lessons')
+                // pick first non-completed, non-locked
+                const firstAvailable = lessons?.find((l) => !l.is_completed && !l.is_locked)
+                if (firstAvailable) setSelectedLessonId(firstAvailable.id)
+              }}
+              onOpenAssignments={() => setActiveTab('assignments')}
+              onOpenPrep={() => setActiveTab('prep')}
+            />
           )}
 
           {activeTab === 'lessons' && lessons && (
@@ -157,57 +171,6 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
         </div>
       )}
     </BottomSheet>
-  )
-}
-
-function OverviewTab({ course }: { course: NonNullable<ReturnType<typeof useCourseDetail>['data']> }) {
-  return (
-    <div className="space-y-4">
-      {course.description && (
-        <p className="text-sm text-gray-600 leading-relaxed">{course.description}</p>
-      )}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 rounded-xl p-3">
-          <p className="text-[11px] text-gray-400">Giảng viên</p>
-          <p className="text-sm font-medium text-brand-dark">{course.instructor_name}</p>
-        </div>
-        {course.program && (
-          <div className="bg-gray-50 rounded-xl p-3">
-            <p className="text-[11px] text-gray-400">Chương trình</p>
-            <p className="text-sm font-medium text-brand-dark">{course.program.name}</p>
-          </div>
-        )}
-      </div>
-
-      {course.course_type === 'retreat' && (
-        <>
-          <div className="bg-purple-50 rounded-xl p-3">
-            <p className="text-[11px] text-gray-400">Địa điểm</p>
-            <p className="text-sm font-medium text-brand-dark">{course.retreat_location}</p>
-            <p className="text-[11px] text-gray-400 mt-1">Ngày</p>
-            <p className="text-sm font-medium text-brand-dark">
-              {course.retreat_date && new Date(course.retreat_date).toLocaleDateString('vi-VN')}
-            </p>
-            <div className="mt-2">
-              <CountdownTimer targetDate={course.retreat_date || ''} />
-            </div>
-          </div>
-        </>
-      )}
-
-      {(course.course_type === 'cohort' || course.course_type === 'on_demand') && (
-        <div>
-          <p className="text-xs text-gray-500 mb-1">{course.modules.length} modules</p>
-          <ProgressBar
-            percent={Math.round(
-              (course.modules.reduce((a, m) => a + m.lessons_completed, 0) /
-                Math.max(course.modules.reduce((a, m) => a + m.lessons_count, 0), 1)) * 100
-            )}
-            showLabel
-          />
-        </div>
-      )}
-    </div>
   )
 }
 
