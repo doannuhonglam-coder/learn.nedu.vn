@@ -53,14 +53,16 @@ export function Topbar({ onNotifClick }: TopbarProps) {
           </button>
           <button
             onClick={() => navigate('/profile')}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold border-2 border-white"
+            className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold border-2 border-white"
             style={{
-              background: 'linear-gradient(135deg,#F5B731,#D4920A)',
+              background: user?.avatar_url
+                ? `url(${user.avatar_url}) center/cover`
+                : 'linear-gradient(135deg,#F5B731,#D4920A)',
               color: '#1A1816',
               boxShadow: '0 2px 8px rgba(245,183,49,0.35)',
             }}
           >
-            {initials}
+            {!user?.avatar_url && initials}
           </button>
         </div>
       </div>

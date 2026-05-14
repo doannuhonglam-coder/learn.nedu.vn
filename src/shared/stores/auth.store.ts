@@ -8,6 +8,7 @@ interface AuthState {
   setSession: (token: string, user: StudentProfile) => void
   clearSession: () => void
   setNotifCount: (count: number) => void
+  updateUser: (patch: Partial<StudentProfile>) => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -17,4 +18,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSession: (accessToken, user) => set({ accessToken, user }),
   clearSession: () => set({ accessToken: null, user: null, notifCount: 0 }),
   setNotifCount: (notifCount) => set({ notifCount }),
+  updateUser: (patch) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...patch } : state.user,
+    })),
 }))
