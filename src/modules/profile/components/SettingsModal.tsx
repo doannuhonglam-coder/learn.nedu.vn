@@ -191,8 +191,8 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
           >
             <ToggleRow
               icon="🔔"
-              title="Push notification"
-              sub="Lịch học · Deadline · Học phí"
+              title="Thông báo"
+              sub="Lịch học · Hạn nộp · Học phí"
               on={pushOn}
               onChange={() => {
                 setPushOn(!pushOn)
@@ -203,7 +203,7 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
             <ToggleRow
               icon="📧"
               title="Email nhắc nhở"
-              sub="Trước deadline 48h"
+              sub="Trước hạn nộp 48 giờ"
               on={emailOn}
               onChange={() => {
                 setEmailOn(!emailOn)

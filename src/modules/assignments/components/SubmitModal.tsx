@@ -55,7 +55,7 @@ export function SubmitModal({ assignment, onClose }: SubmitModalProps) {
   return (
     <BottomSheet open={!!assignment} onClose={onClose} title={assignment.title}>
       <div className="space-y-4">
-        {/* Deadline pill */}
+        {/* Hạn nộp pill */}
         <div
           className="rounded-xl px-3.5 py-2.5 flex items-center gap-2"
           style={{
