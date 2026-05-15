@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { Spinner } from '../../../shared/components/ui/Spinner'
 import { Badge } from '../../../shared/components/ui/Badge'
+import { toast } from '../../../shared/components/ui/Toast'
 import { useCourseDetail, useCourseLessons, useLessonDetail } from '../hooks/useCourseDetail'
 import { useEnrollments } from '../hooks/useCourses'
 import { useAssignments } from '../../assignments/hooks/useAssignments'
@@ -120,7 +121,19 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
           )}
 
           {activeTab === 'materials' && (
-            <MaterialsList materials={lessonDetail?.materials || []} />
+            <MaterialsList
+              materials={
+                lessonDetail?.materials && lessonDetail.materials.length > 0
+                  ? lessonDetail.materials
+                  : course.course_type === 'coaching'
+                    ? [
+                        { id: 'coach-mat-01', title: '📘 Sổ tay Coaching · Hướng dẫn ghi chú', file_type: 'pdf' as const, file_size_bytes: 1_800_000, signed_url: '#' },
+                        { id: 'coach-mat-02', title: '🎯 Worksheet · Xác định mục tiêu 90 ngày', file_type: 'pdf' as const, file_size_bytes: 950_000, signed_url: '#' },
+                        { id: 'coach-mat-03', title: '🧭 Bộ câu hỏi tự vấn (50 câu)', file_type: 'pdf' as const, file_size_bytes: 1_200_000, signed_url: '#' },
+                      ]
+                    : []
+              }
+            />
           )}
 
           {activeTab === 'prep' && course.retreat_prep_checklist && (
@@ -154,20 +167,7 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
             </div>
           )}
 
-          {activeTab === 'notes' && (
-            <div className="space-y-3">
-              {[
-                { session: 1, notes: 'Xác định 5 giá trị cốt lõi. Homework: viết nhật ký giá trị 7 ngày.', date: '15/02/2026' },
-                { session: 2, notes: 'Nhận diện 3 pattern cảm xúc chính. Homework: ghi nhận trigger hàng ngày.', date: '01/03/2026' },
-                { session: 3, notes: 'Lên kế hoạch thay đổi 1 thói quen. Homework: thực hành 21 ngày.', date: '15/03/2026' },
-              ].map((n) => (
-                <div key={n.session} className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-brand-gold font-medium">Buổi {n.session} · {n.date}</p>
-                  <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{n.notes}</p>
-                </div>
-              ))}
-            </div>
-          )}
+          {activeTab === 'book' && <CoachingBookTab instructorName={course.instructor_name} />}
         </div>
       )}
     </BottomSheet>
@@ -206,6 +206,100 @@ function MaterialsList({ materials }: { materials: CourseMaterial[] }) {
   )
 }
 
+function CoachingBookTab({ instructorName }: { instructorName: string }) {
+  const [bookedIds, setBookedIds] = useState<Set<string>>(new Set())
+
+  // Generate next 4 available slots dynamically (next 14 days, weekdays only)
+  const slots = (() => {
+    const out: { id: string; day: number; month: number; weekday: string; start: string; end: string }[] = []
+    const now = new Date()
+    let offset = 1
+    const times: Array<[string, string]> = [['10:00', '11:30'], ['14:00', '15:30']]
+    while (out.length < 4 && offset <= 21) {
+      const d = new Date(now.getTime() + offset * 86_400_000)
+      const dow = d.getDay()
+      if (dow !== 0 && dow !== 6) {
+        const [start, end] = times[out.length % 2]
+        const weekdayLabel = ['CN','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][dow]
+        out.push({
+          id: `slot-${offset}-${start}`,
+          day: d.getDate(),
+          month: d.getMonth() + 1,
+          weekday: weekdayLabel,
+          start, end,
+        })
+      }
+      offset++
+    }
+    return out
+  })()
+
+  const handleBook = (slotId: string, label: string) => {
+    setBookedIds((prev) => new Set(prev).add(slotId))
+    toast(`✓ Đã đặt lịch ${label}`, 'success')
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[12px] text-i2 leading-relaxed">
+        Chọn khung giờ phù hợp với <strong>{instructorName}</strong>. Lịch được cập nhật theo tuần.
+      </p>
+
+      <div
+        className="bg-surface rounded-[14px]"
+        style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+      >
+        {slots.map((s, i) => {
+          const booked = bookedIds.has(s.id)
+          const label = `${s.weekday}, ${String(s.day).padStart(2,'0')}/${String(s.month).padStart(2,'0')} · ${s.start}–${s.end}`
+          return (
+            <div key={s.id}>
+              <div className="flex items-center gap-3 px-3.5 py-3">
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-[16px] flex-shrink-0"
+                  style={{ background: '#FEF4D6' }}
+                >
+                  📅
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold text-ink">
+                    {s.weekday}, {String(s.day).padStart(2,'0')}/{String(s.month).padStart(2,'0')}
+                    <span className="text-i3 font-normal"> · {s.start}–{s.end}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleBook(s.id, label)}
+                  disabled={booked}
+                  className="text-[11px] font-semibold px-3 py-1.5 rounded-md flex-shrink-0 disabled:opacity-50"
+                  style={{
+                    background: booked ? '#F0FDF4' : '#FEF4D6',
+                    color: booked ? '#16A34A' : '#D4920A',
+                  }}
+                >
+                  {booked ? '✓ Đã đặt' : 'Đặt lịch'}
+                </button>
+              </div>
+              {i < slots.length - 1 && (
+                <div style={{ borderTop: '1px solid rgba(26,24,22,0.08)' }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <div
+        className="rounded-xl px-3 py-2.5 flex items-start gap-2"
+        style={{ background: '#FEF4D6', border: '1px solid rgba(245,183,49,0.25)' }}
+      >
+        <span className="text-[14px] mt-0.5">💡</span>
+        <span className="text-[11px] leading-relaxed" style={{ color: '#8B5A15' }}>
+          Có thể đổi lịch trước buổi 24h. Liên hệ Nedu nếu cần huỷ gấp.
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function getTabs(courseType?: string) {
   switch (courseType) {
     case 'retreat':
@@ -217,8 +311,10 @@ function getTabs(courseType?: string) {
     case 'coaching':
       return [
         { key: 'overview', label: 'Tổng quan' },
-        { key: 'coaching', label: 'Buổi Coaching' },
-        { key: 'notes', label: 'Ghi Chú' },
+        { key: 'coaching', label: 'Lịch sử' },
+        { key: 'book', label: 'Đặt lịch' },
+        { key: 'assignments', label: 'Bài tập' },
+        { key: 'materials', label: 'Tài liệu' },
       ]
     default:
       return [

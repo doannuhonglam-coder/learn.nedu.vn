@@ -52,13 +52,59 @@ const mockEnrollments = [
 ]
 
 const mockCourseDetail = {
-  id: 'crs-001', name: 'Lãnh Đạo Cảm Xúc Mùa 12', slug: 'lcm-12', course_type: 'cohort', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_countdown_seconds: null, cohort_start_date: '2026-03-01', cohort_end_date: '2026-06-01', coaching_sessions_completed: null, coaching_sessions_total: null, metaphysical_match_score: 85,
-  description: 'Khoá học giúp bạn hiểu và làm chủ cảm xúc trong vai trò lãnh đạo.', program: { id: 'prg-001', name: 'LCM' },
+  id: 'crs-001', name: 'Lãnh Đạo Cảm Xúc Mùa 12', slug: 'lcm-12', course_type: 'cohort', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: '2026-03-01', cohort_end_date: '2026-06-01', coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 3, total_modules: 8, metaphysical_match_score: 85,
+  description: 'Khoá học giúp bạn hiểu và làm chủ cảm xúc trong vai trò lãnh đạo. Qua 8 module và 32 bài học, bạn sẽ phát triển khả năng nhận diện, điều chỉnh và sử dụng cảm xúc hiệu quả.',
+  program: { id: 'prg-001', name: 'LCM' },
   modules: [
     { id: 'mod-001', title: 'Module 1: Nhận Diện Cảm Xúc', order_index: 1, lessons_count: 4, lessons_completed: 4, is_locked: false },
     { id: 'mod-002', title: 'Module 2: Hiểu Về Bản Thân', order_index: 2, lessons_count: 4, lessons_completed: 4, is_locked: false },
     { id: 'mod-003', title: 'Module 3: Cảm Xúc & Giao Tiếp', order_index: 3, lessons_count: 4, lessons_completed: 2, is_locked: false },
     { id: 'mod-004', title: 'Module 4: Lãnh Đạo Bằng Trái Tim', order_index: 4, lessons_count: 4, lessons_completed: 0, is_locked: true },
+  ],
+  retreat_location: null, retreat_prep_checklist: null, retreat_schedule: null,
+}
+
+const mockOnDemandDetail = {
+  id: 'crs-003', name: 'Con Số & Cuộc Bạn', slug: 'cscb-on-demand', course_type: 'on_demand', status: 'published', instructor_name: 'Thầy Minh', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 7, total_modules: 11, metaphysical_match_score: null,
+  description: 'Khoá học tự học về Numerology — khám phá ý nghĩa các con số trong cuộc đời bạn. Học theo nhịp riêng, không có deadline cohort.',
+  program: { id: 'prg-002', name: 'Self-Discovery' },
+  modules: [
+    { id: 'mod-cs-01', title: 'Module 1: Giới thiệu Numerology', order_index: 1, lessons_count: 3, lessons_completed: 3, is_locked: false },
+    { id: 'mod-cs-02', title: 'Module 2: Life Path Number', order_index: 2, lessons_count: 3, lessons_completed: 3, is_locked: false },
+    { id: 'mod-cs-03', title: 'Module 3: Expression Number', order_index: 3, lessons_count: 3, lessons_completed: 3, is_locked: false },
+    { id: 'mod-cs-04', title: 'Module 4: Soul Urge Number', order_index: 4, lessons_count: 3, lessons_completed: 3, is_locked: false },
+    { id: 'mod-cs-05', title: 'Module 5: Personality Number', order_index: 5, lessons_count: 3, lessons_completed: 3, is_locked: false },
+    { id: 'mod-cs-06', title: 'Module 6: Personal Year', order_index: 6, lessons_count: 3, lessons_completed: 3, is_locked: false },
+    { id: 'mod-cs-07', title: 'Module 7: Master Numbers (11, 22, 33)', order_index: 7, lessons_count: 3, lessons_completed: 1, is_locked: false },
+    { id: 'mod-cs-08', title: 'Module 8: Numerology trong Sự Nghiệp', order_index: 8, lessons_count: 3, lessons_completed: 0, is_locked: false },
+    { id: 'mod-cs-09', title: 'Module 9: Numerology trong Tình Yêu', order_index: 9, lessons_count: 3, lessons_completed: 0, is_locked: false },
+    { id: 'mod-cs-10', title: 'Module 10: Phân Tích Hồ Sơ Hoàn Chỉnh', order_index: 10, lessons_count: 4, lessons_completed: 0, is_locked: false },
+    { id: 'mod-cs-11', title: 'Module 11: Bài kiểm tra cuối khoá', order_index: 11, lessons_count: 1, lessons_completed: 0, is_locked: false },
+  ],
+  retreat_location: null, retreat_prep_checklist: null, retreat_schedule: null,
+}
+
+const mockCoachingDetail = {
+  id: 'crs-004', name: 'Coaching 1:1 với Chị Nhí', slug: 'coaching-nhi-2026', course_type: 'coaching', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: 3, coaching_sessions_total: 8, current_module: null, total_modules: null, metaphysical_match_score: null,
+  description: 'Gói coaching 1:1 cá nhân hoá 8 buổi với Chị Nhí Lê. Mỗi buổi 90 phút qua Google Meet, được thiết kế riêng theo mục tiêu và pace của bạn.',
+  program: { id: 'prg-coach', name: 'Premium Coaching' },
+  modules: [],
+  retreat_location: null, retreat_prep_checklist: null, retreat_schedule: null,
+}
+
+const mockCompletedCohortDetail = {
+  id: 'crs-005', name: 'Khám Phá Bản Thân K9', slug: 'kpbt-k9', course_type: 'cohort', status: 'published', instructor_name: 'Thầy Minh', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: '2025-09-01', cohort_end_date: '2025-12-01', coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 8, total_modules: 8, metaphysical_match_score: null,
+  description: 'Khoá học cohort K9 đã hoàn thành — bạn đã tốt nghiệp xuất sắc với điểm số 9.2/10. Chứng chỉ đã được cấp.',
+  program: { id: 'prg-kpbt', name: 'Khám Phá Bản Thân' },
+  modules: [
+    { id: 'mod-k9-01', title: 'Module 1: Khởi Đầu Hành Trình', order_index: 1, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-02', title: 'Module 2: Giá Trị Cốt Lõi', order_index: 2, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-03', title: 'Module 3: Điểm Mạnh Bản Thân', order_index: 3, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-04', title: 'Module 4: Vùng Bóng Tối', order_index: 4, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-05', title: 'Module 5: Tầm Nhìn Cuộc Đời', order_index: 5, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-06', title: 'Module 6: Kế Hoạch Hành Động', order_index: 6, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-07', title: 'Module 7: Thực Hành 21 Ngày', order_index: 7, lessons_count: 4, lessons_completed: 4, is_locked: false },
+    { id: 'mod-k9-08', title: 'Module 8: Bảo Vệ Đồ Án', order_index: 8, lessons_count: 4, lessons_completed: 4, is_locked: false },
   ],
   retreat_location: null, retreat_prep_checklist: null, retreat_schedule: null,
 }
@@ -91,6 +137,40 @@ const mockLessons = [
   { id: 'les-009', title: 'Bài 9: Phản hồi xây dựng', order_index: 9, duration_minutes: 25, is_preview: false, is_locked: true, is_completed: false, completed_at: null, unlock_condition: 'Hoàn thành Module 3 để mở khóa' },
   { id: 'les-010', title: 'Bài 10: Dẫn dắt bằng cảm xúc', order_index: 10, duration_minutes: 40, is_preview: false, is_locked: true, is_completed: false, completed_at: null, unlock_condition: 'Hoàn thành Module 3 để mở khóa' },
 ]
+
+const mockLessonsOnDemand = [
+  { id: 'les-cs-01', title: 'Giới thiệu Numerology', order_index: 1, duration_minutes: 12, is_preview: true, is_locked: false, is_completed: true, completed_at: '2026-01-20T10:00:00Z', unlock_condition: null },
+  { id: 'les-cs-02', title: 'Lịch sử các con số', order_index: 2, duration_minutes: 18, is_preview: false, is_locked: false, is_completed: true, completed_at: '2026-01-22T10:00:00Z', unlock_condition: null },
+  { id: 'les-cs-03', title: 'Tính Life Path Number', order_index: 3, duration_minutes: 22, is_preview: false, is_locked: false, is_completed: true, completed_at: '2026-01-25T10:00:00Z', unlock_condition: null },
+  { id: 'les-cs-04', title: 'Ý nghĩa Life Path 1-9', order_index: 4, duration_minutes: 28, is_preview: false, is_locked: false, is_completed: true, completed_at: '2026-02-01T10:00:00Z', unlock_condition: null },
+  { id: 'les-cs-05', title: 'Tính Expression Number', order_index: 5, duration_minutes: 20, is_preview: false, is_locked: false, is_completed: true, completed_at: '2026-02-10T10:00:00Z', unlock_condition: null },
+  { id: 'les-cs-06', title: 'Master Numbers 11-22-33', order_index: 6, duration_minutes: 32, is_preview: false, is_locked: false, is_completed: false, completed_at: null, unlock_condition: null },
+  { id: 'les-cs-07', title: 'Phân tích Numerology trong sự nghiệp', order_index: 7, duration_minutes: 26, is_preview: false, is_locked: false, is_completed: false, completed_at: null, unlock_condition: null },
+  { id: 'les-cs-08', title: 'Bài kiểm tra cuối khoá', order_index: 8, duration_minutes: 45, is_preview: false, is_locked: true, is_completed: false, completed_at: null, unlock_condition: 'Hoàn thành tất cả bài học' },
+]
+
+const mockLessonsCompleted = [
+  { id: 'les-k9-01', title: 'Bài 1: Khởi đầu hành trình', order_index: 1, duration_minutes: 30, is_preview: false, is_locked: false, is_completed: true, completed_at: '2025-09-05T10:00:00Z', unlock_condition: null },
+  { id: 'les-k9-02', title: 'Bài 2: Tự đánh giá ban đầu', order_index: 2, duration_minutes: 25, is_preview: false, is_locked: false, is_completed: true, completed_at: '2025-09-12T10:00:00Z', unlock_condition: null },
+  { id: 'les-k9-03', title: 'Bài 3: Khám phá giá trị cốt lõi', order_index: 3, duration_minutes: 35, is_preview: false, is_locked: false, is_completed: true, completed_at: '2025-09-19T10:00:00Z', unlock_condition: null },
+  { id: 'les-k9-04', title: 'Bài 4: Bảo vệ đồ án cuối', order_index: 4, duration_minutes: 40, is_preview: false, is_locked: false, is_completed: true, completed_at: '2025-11-28T10:00:00Z', unlock_condition: null },
+]
+
+const mockCourseDetails: Record<string, typeof mockCourseDetail> = {
+  'crs-001': mockCourseDetail,
+  'crs-002': mockRetreatDetail as never,
+  'crs-003': mockOnDemandDetail as never,
+  'crs-004': mockCoachingDetail as never,
+  'crs-005': mockCompletedCohortDetail as never,
+}
+
+const mockCourseLessons: Record<string, typeof mockLessons> = {
+  'crs-001': mockLessons,
+  'crs-002': [],
+  'crs-003': mockLessonsOnDemand,
+  'crs-004': [],
+  'crs-005': mockLessonsCompleted,
+}
 
 const mockLessonDetail = {
   id: 'les-007', title: 'Bài 7: Lắng nghe chủ động', order_index: 7, duration_minutes: 30, is_preview: false, is_locked: false, is_completed: false, completed_at: null, unlock_condition: null,
@@ -157,15 +237,15 @@ const mockEvents = [
     meeting_id: '111 222 333', meeting_passcode: null,
     will_be_recorded: true, recording_url: 'https://zoom.us/rec/play/abc',
   },
-  // FUTURE — starts in 5 days
+  // FUTURE — starts in 5 days (gắn vào Retreat Tĩnh Tâm — workshop chuẩn bị tinh thần)
   {
     id: 'evt-004', title: 'Workshop Chánh Niệm · 3 ngày', event_type: 'offline',
     ...__atOffset(5 * 86_400_000, 180),
     platform: null, location: 'Q3 TPHCM · 45 Nguyễn Đình Chiểu',
-    course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Hoài An',
-    description: 'Workshop nội trú 3 ngày tại trung tâm thiền Q3. Mang trang phục thoải mái, nước uống, và nhật ký cá nhân.',
+    course_id: 'crs-002', course_name: 'Retreat Tĩnh Tâm Đà Lạt', instructor_name: 'Hoài An',
+    description: 'Workshop nội trú 3 ngày tại trung tâm thiền Q3 — chuẩn bị tâm thế trước khi đi Retreat Đà Lạt. Mang trang phục thoải mái, nước uống, và nhật ký cá nhân.',
     meeting_url: null, is_joinable: false, join_available_in_seconds: null, ical_url: '#',
-    module_title: 'Bonus Workshop',
+    module_title: 'Pre-Retreat Workshop',
     agenda: ['Day 1: Hơi thở chánh niệm', 'Day 2: Body scan', 'Day 3: Tích hợp & cam kết'],
     prep_items: ['Mặc quần áo thoải mái', 'Mang chai nước cá nhân', 'Đến trước 15 phút check-in', 'Nhật ký cá nhân'],
     meeting_id: null, meeting_passcode: null,
@@ -266,9 +346,16 @@ export function getMockResponse(rawPath: string, _method: string): any {
   if (path === '/notifications/preferences') return { push_enabled: true, email_enabled: true, push_schedule: true, push_assignment: true, push_payment: true }
 
   // Dynamic routes
-  if (path.startsWith('/courses/crs-002')) return mockRetreatDetail
-  if (path.match(/^\/courses\/[^/]+$/)) return mockCourseDetail
-  if (path.match(/^\/courses\/[^/]+\/lessons/)) return mockLessons
+  {
+    const courseDetailMatch = path.match(/^\/courses\/([^/]+)$/)
+    if (courseDetailMatch) {
+      return mockCourseDetails[courseDetailMatch[1]] || mockCourseDetail
+    }
+    const lessonsMatch = path.match(/^\/courses\/([^/]+)\/lessons/)
+    if (lessonsMatch) {
+      return mockCourseLessons[lessonsMatch[1]] || []
+    }
+  }
   if (path.match(/^\/courses\/[^/]+\/materials/)) return mockLessonDetail.materials
   if (path.match(/^\/lessons\/[^/]+$/)) return mockLessonDetail
   if (path.match(/^\/lessons\/[^/]+\/notes/)) return { content: mockLessonDetail.notes }
