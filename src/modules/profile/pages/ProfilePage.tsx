@@ -88,22 +88,6 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Footer */}
-      <div className="text-center mt-5">
-        <p
-          className="font-mono text-[11px] text-i3"
-          style={{ letterSpacing: '0.04em' }}
-        >
-          learn.nedu.vn · v10
-        </p>
-        <p
-          className="font-mono text-[11px] text-i3 mt-1"
-          style={{ letterSpacing: '0.04em' }}
-        >
-          Phiên bản 2.4.0
-        </p>
-      </div>
-
       {/* Modals */}
       <MetaphysicalModal
         open={metaModalOpen}

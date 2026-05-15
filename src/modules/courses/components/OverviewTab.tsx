@@ -340,7 +340,7 @@ export function OverviewTab({
           className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
           style={{ letterSpacing: '0.06em' }}
         >
-          Giảng viên
+          Người dẫn đường
         </div>
         <div
           className="bg-surface rounded-[14px] px-4 py-3 flex items-center gap-3"
@@ -362,7 +362,7 @@ export function OverviewTab({
               {course.instructor_name}
             </div>
             <div className="text-[11px] text-i3 mt-0.5">
-              {course.program ? course.program.name : 'Mentor · Nedu Education'}
+              {course.program ? course.program.name : 'Người dẫn đường · Nedu Education'}
             </div>
           </div>
         </div>
