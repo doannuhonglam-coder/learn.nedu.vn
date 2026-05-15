@@ -106,7 +106,7 @@ export function StreakModal({ open, onClose, currentStreakDays }: StreakModalPro
           className="w-full py-3.5 rounded-xl text-[14px] font-semibold transition-opacity"
           style={{ background: '#1A1816', color: '#F5B731' }}
         >
-          Tuyệt! Nhắc tôi mốc kế
+          Tuyệt! Nhắc tôi mốc kế tiếp
         </button>
         <button
           onClick={onClose}

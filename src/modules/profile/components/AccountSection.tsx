@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { PendingPaymentAlert } from '../../../shared/types'
+import { SquircleIcon } from './SquircleIcon'
 
 interface AccountSectionProps {
   pendingPayment: PendingPaymentAlert | null
@@ -40,10 +41,7 @@ export function AccountSection({
           onClick={() => navigate('/payments')}
           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors rounded-t-[14px]"
         >
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: pendingPayment ? '#C0392B' : '#D4920A' }}
-          />
+          <SquircleIcon kind="invoice" size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-semibold text-ink">Thanh toán & Hoá đơn</div>
             <div
@@ -63,10 +61,7 @@ export function AccountSection({
           onClick={onOpenSettings}
           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors"
         >
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: '#8A8480' }}
-          />
+          <SquircleIcon kind="gear" size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-semibold text-ink">Cài đặt</div>
             <div className="text-[11px] text-i3 mt-0.5 truncate">
@@ -83,10 +78,7 @@ export function AccountSection({
           onClick={onOpenSupport}
           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors rounded-b-[14px]"
         >
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: '#8A8480' }}
-          />
+          <SquircleIcon kind="chat" size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-semibold text-ink">Liên hệ Nedu</div>
             <div className="text-[11px] text-i3 mt-0.5 truncate">

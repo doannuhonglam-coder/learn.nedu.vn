@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { MetaphysicalProfile } from '../../../shared/types'
 import { certificatesService } from '../../certificates/services/certificates.service'
+import { SquircleIcon } from './SquircleIcon'
 
 interface JourneySectionProps {
   metaphysical: MetaphysicalProfile | null
@@ -65,12 +66,7 @@ export function JourneySection({
           onClick={onOpenBaZi}
           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors first:rounded-t-[14px]"
         >
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center font-display text-[13px] font-bold flex-shrink-0"
-            style={{ background: '#F5F3EF', color: '#8A8480' }}
-          >
-            1
-          </div>
+          <SquircleIcon kind="leaf" size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-semibold text-ink">Hồ sơ BaZi</div>
             <div className="text-[11px] text-i3 mt-0.5 truncate">{baziSummary}</div>
@@ -85,16 +81,7 @@ export function JourneySection({
           onClick={onOpenCertificates}
           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors"
         >
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-            style={{
-              background: 'linear-gradient(135deg,#FDE68A,#B45309)',
-              color: 'white',
-              fontFamily: 'serif',
-            }}
-          >
-            1st
-          </div>
+          <SquircleIcon kind="medal" size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-semibold text-ink">Chứng chỉ đã đạt</div>
             <div className="text-[11px] text-i3 mt-0.5 truncate">{certSummary}</div>
@@ -114,12 +101,7 @@ export function JourneySection({
           onClick={onOpenStreak}
           className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors last:rounded-b-[14px]"
         >
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[14px] flex-shrink-0"
-            style={{ background: '#FEF4D6' }}
-          >
-            🔥
-          </div>
+          <SquircleIcon kind="flame" size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-semibold text-ink">Chuỗi ngày học</div>
             <div className="text-[11px] text-i3 mt-0.5 truncate">{streakSummary}</div>
