@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { toast } from '../../../shared/components/ui/Toast'
+import { getEventStatus } from '../lib/event-status'
 import type { ScheduleEvent } from '../../../shared/types'
 
 // ── Calendar helpers ──────────────────────────────────────────────
@@ -20,40 +21,17 @@ function buildGoogleCalendarUrl(event: ScheduleEvent): string {
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
-function buildOutlookCalendarUrl(event: ScheduleEvent): string {
-  const params = new URLSearchParams({
-    path: '/calendar/action/compose',
-    rru: 'addevent',
-    subject: event.title,
-    startdt: event.start_time,
-    enddt: event.end_time,
-    body: `${event.course_name} · ${event.instructor_name}${event.description ? '\n\n' + event.description : ''}`,
-    location: event.location || event.platform || '',
-  })
-  return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`
-}
-
 function downloadIcs(event: ScheduleEvent) {
   const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Nedu Learn//VI',
-    'BEGIN:VEVENT',
-    `UID:${event.id}@nedu.vn`,
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nedu Learn//VI',
+    'BEGIN:VEVENT', `UID:${event.id}@nedu.vn`,
     `DTSTART:${toIcsDate(event.start_time)}`,
     `DTEND:${toIcsDate(event.end_time)}`,
     `SUMMARY:${event.title}`,
-    `DESCRIPTION:${event.course_name} - ${event.instructor_name}${event.description ? ' - ' + event.description : ''}`,
-    event.location
-      ? `LOCATION:${event.location}`
-      : event.platform
-        ? `LOCATION:${event.platform}`
-        : '',
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ]
-    .filter(Boolean)
-    .join('\r\n')
+    `DESCRIPTION:${event.course_name} - ${event.instructor_name}`,
+    event.location ? `LOCATION:${event.location}` : event.platform ? `LOCATION:${event.platform}` : '',
+    'END:VEVENT', 'END:VCALENDAR',
+  ].filter(Boolean).join('\r\n')
 
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
   const url = URL.createObjectURL(blob)
@@ -64,159 +42,6 @@ function downloadIcs(event: ScheduleEvent) {
   URL.revokeObjectURL(url)
 }
 
-async function copyToClipboard(event: ScheduleEvent) {
-  const date = new Date(event.start_time)
-  const endDate = new Date(event.end_time)
-  const text = [
-    `📅 ${event.title}`,
-    `⏰ ${date.toLocaleString('vi-VN')} – ${endDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`,
-    event.location ? `📍 ${event.location}` : event.platform ? `🌐 ${event.platform}` : '',
-    event.course_name ? `📚 ${event.course_name} · ${event.instructor_name}` : '',
-    event.meeting_url ? `🔗 ${event.meeting_url}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n')
-
-  await navigator.clipboard.writeText(text)
-}
-
-// ── Add to Calendar Picker ────────────────────────────────────────
-
-interface AddToCalendarPickerProps {
-  open: boolean
-  event: ScheduleEvent
-  onClose: () => void
-}
-
-function AddToCalendarPicker({ open, event, onClose }: AddToCalendarPickerProps) {
-  if (!open) return null
-
-  const handleGoogle = () => {
-    window.open(buildGoogleCalendarUrl(event), '_blank', 'noopener,noreferrer')
-    toast('📅 Mở Google Calendar...', 'success')
-    onClose()
-  }
-
-  const handleOutlook = () => {
-    window.open(buildOutlookCalendarUrl(event), '_blank', 'noopener,noreferrer')
-    toast('📅 Mở Outlook Calendar...', 'success')
-    onClose()
-  }
-
-  const handleIcs = () => {
-    downloadIcs(event)
-    toast('📥 Đã tải file .ics — mở để thêm vào Apple Calendar', 'success')
-    onClose()
-  }
-
-  const handleCopy = async () => {
-    try {
-      await copyToClipboard(event)
-      toast('📋 Đã sao chép thông tin sự kiện', 'success')
-      onClose()
-    } catch {
-      toast('Không thể sao chép', 'error')
-    }
-  }
-
-  const options = [
-    {
-      onClick: handleGoogle,
-      iconBg: '#fff',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24">
-          <path fill="#fff" d="M20 4v16H4V4z" />
-          <path fill="#EA4335" d="M20 4v6h-3.4l-2.6-6z" />
-          <path fill="#34A853" d="M20 20v-6h-3.4l-2.6 6z" />
-          <path fill="#4285F4" d="M4 20h6v-3.4l-6-2.6z" />
-          <path fill="#FBBC05" d="M4 4h6v3.4L4 10z" />
-          <text x="12" y="16" textAnchor="middle" fontSize="9" fontWeight="700" fill="#4285F4">28</text>
-        </svg>
-      ),
-      title: 'Google Calendar',
-      sub: 'Mở để thêm sự kiện (đã điền sẵn)',
-    },
-    {
-      onClick: handleOutlook,
-      iconBg: '#0078D4',
-      icon: <span className="text-white text-[18px] font-bold">O</span>,
-      title: 'Outlook Calendar',
-      sub: 'Mở Outlook web để thêm',
-    },
-    {
-      onClick: handleIcs,
-      iconBg: '#000',
-      icon: <span className="text-white text-[16px]">🍎</span>,
-      title: 'Apple Calendar (.ics)',
-      sub: 'Tải file để thêm vào Apple/Outlook desktop',
-    },
-    {
-      onClick: handleCopy,
-      iconBg: '#F5F3EF',
-      icon: (
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4A4540" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      ),
-      title: 'Sao chép thông tin',
-      sub: 'Paste vào tin nhắn, ghi chú...',
-    },
-  ]
-
-  return (
-    <div className="fixed inset-0 z-[110] flex items-end justify-center">
-      <div
-        className="absolute inset-0"
-        style={{ background: 'rgba(26,24,22,0.55)', backdropFilter: 'blur(4px)' }}
-        onClick={onClose}
-      />
-      <div
-        className="relative w-full max-w-[420px] bg-surface rounded-t-[20px] overflow-hidden"
-        style={{
-          maxHeight: '80vh',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-          animation: 'slideUp 0.3s cubic-bezier(.25,.46,.45,.94)',
-        }}
-      >
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(26,24,22,0.10)' }} />
-        </div>
-
-        <div className="px-5 pt-3 pb-2">
-          <h3 className="font-display text-[16px] font-semibold text-ink">
-            Thêm vào lịch
-          </h3>
-          <p className="text-[11px] text-i3 mt-0.5">
-            Chọn ứng dụng lịch bạn muốn dùng
-          </p>
-        </div>
-
-        <div className="px-3 py-2 space-y-1">
-          {options.map((opt) => (
-            <button
-              key={opt.title}
-              onClick={opt.onClick}
-              className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-s2 transition-colors text-left"
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: opt.iconBg, border: '1px solid rgba(26,24,22,0.08)' }}
-              >
-                {opt.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-ink">{opt.title}</div>
-                <div className="text-[11px] text-i3 mt-px">{opt.sub}</div>
-              </div>
-              <span className="text-i3 text-[16px]">›</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Event Modal ───────────────────────────────────────────────────
 
 interface EventModalProps {
@@ -224,161 +49,489 @@ interface EventModalProps {
   onClose: () => void
 }
 
+const REMINDER_OPTIONS = [
+  { key: 'night_before', label: 'Tối hôm trước', offset: '20:00' },
+  { key: '1h_before', label: 'Trước buổi 1 giờ', offset: '-1 giờ' },
+  { key: '10m_before', label: 'Trước buổi 10 phút', offset: '-10 phút' },
+  { key: 'at_start', label: 'Khi buổi bắt đầu', offset: '0 phút' },
+] as const
+
 export function EventModal({ event, onClose }: EventModalProps) {
-  const [countdown, setCountdown] = useState<number | null>(null)
-  const [pickerOpen, setPickerOpen] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
+  const [prepChecked, setPrepChecked] = useState<Set<number>>(new Set())
+  const [pushOn, setPushOn] = useState(true)
+  const [enabledReminders, setEnabledReminders] = useState<Set<string>>(
+    new Set(['night_before', '1h_before', '10m_before']),
+  )
 
   useEffect(() => {
-    if (!event || event.is_joinable || !event.join_available_in_seconds) {
-      setCountdown(null)
-      return
-    }
-    setCountdown(event.join_available_in_seconds)
-    const interval = setInterval(() => {
-      setCountdown((prev) => (prev && prev > 0 ? prev - 1 : 0))
-    }, 1000)
+    if (!event) return
+    const interval = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(interval)
   }, [event])
 
   if (!event) return null
 
+  const statusInfo = getEventStatus(event, now)
+  const isLive = statusInfo.status === 'live'
+  const isSoon = statusInfo.status === 'soon'
+  const isFuture = statusInfo.status === 'future'
+  const isDone = statusInfo.status === 'done'
+  const isMissed = statusInfo.status === 'missed'
+  const isPast = isDone || isMissed
+
   const date = new Date(event.start_time)
   const endDate = new Date(event.end_time)
 
-  const formatCountdown = (seconds: number) => {
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    return `${h}h ${m}m`
+  const typeBadge =
+    event.event_type === 'retreat'
+      ? { bg: '#EDE9FE', color: '#5B21B6', label: 'Retreat' }
+      : event.event_type === 'offline'
+        ? { bg: '#FEF4D6', color: '#D4920A', label: 'Offline' }
+        : { bg: '#FEF4D6', color: '#D4920A', label: 'Online' }
+
+  const togglePrep = (i: number) => {
+    setPrepChecked((prev) => {
+      const next = new Set(prev)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
+      return next
+    })
   }
 
-  const badgeStyle =
-    event.event_type === 'retreat'
-      ? { bg: '#EDE9FE', color: '#5B21B6', label: '🌿 Retreat' }
-      : event.event_type === 'offline'
-        ? { bg: '#FEF4D6', color: '#D4920A', label: '📍 Offline' }
-        : { bg: '#FEF4D6', color: '#D4920A', label: '🌐 Online' }
+  const toggleReminder = (key: string) => {
+    setEnabledReminders((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const handlePrimaryAction = () => {
+    if (isLive || isSoon) {
+      if (event.meeting_url) {
+        window.open(event.meeting_url, '_blank', 'noopener,noreferrer')
+      }
+    } else if (isFuture) {
+      window.open(buildGoogleCalendarUrl(event), '_blank', 'noopener,noreferrer')
+      toast('📅 Mở Google Calendar...', 'success')
+    } else if (isDone && event.recording_url) {
+      window.open(event.recording_url, '_blank', 'noopener,noreferrer')
+    } else if (isMissed) {
+      toast('Sẽ thông báo khi có recording', 'info')
+    }
+  }
+
+  const prepDone = prepChecked.size
+  const prepTotal = event.prep_items?.length || 0
 
   return (
     <BottomSheet open={!!event} onClose={onClose} title={event.title}>
       <div className="space-y-3">
-        <span
-          className="inline-flex items-center gap-1 text-[11px] font-semibold px-3 py-1 rounded-full"
-          style={{ background: badgeStyle.bg, color: badgeStyle.color }}
-        >
-          {badgeStyle.label}
-        </span>
+        {/* Status pill */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="inline-flex items-center text-[11px] font-bold uppercase px-3 py-1 rounded-full"
+            style={{
+              background: statusInfo.bg,
+              color: statusInfo.color,
+              letterSpacing: '0.05em',
+            }}
+          >
+            {statusInfo.longLabel}
+          </span>
+          <span
+            className="inline-flex items-center text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
+            style={{ background: typeBadge.bg, color: typeBadge.color }}
+          >
+            {typeBadge.label}
+          </span>
+        </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl px-3 py-2.5" style={{ background: '#F5F3EF' }}>
+        {/* Course pills */}
+        {event.course_name && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] font-semibold text-i2">{event.course_name}</span>
+            {event.module_title && (
+              <>
+                <span className="text-i3 text-[10px]">·</span>
+                <span className="text-[11px] font-medium text-gold-d">
+                  {event.module_title}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* 3 quick info rows */}
+        <div className="space-y-1.5">
+          {/* Date + time */}
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: '#F5F3EF' }}>
             <div
-              className="font-mono text-[10px] font-semibold uppercase text-i3 mb-0.5"
-              style={{ letterSpacing: '0.05em' }}
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-[16px] flex-shrink-0"
+              style={{ background: '#FEF4D6' }}
             >
-              Ngày
+              📅
             </div>
-            <div className="text-[13px] font-semibold text-ink capitalize">
-              {date.toLocaleDateString('vi-VN', {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'numeric',
-              })}
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-semibold text-ink capitalize">
+                {isPast || isFuture
+                  ? date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
+                  : `Hôm nay · ${date.toLocaleDateString('vi-VN', { weekday: 'long' })}`}
+              </div>
+              <div className="text-[11px] text-i3">
+                {date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                {' – '}
+                {endDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+              </div>
             </div>
           </div>
-          <div className="rounded-xl px-3 py-2.5" style={{ background: '#F5F3EF' }}>
-            <div
-              className="font-mono text-[10px] font-semibold uppercase text-i3 mb-0.5"
-              style={{ letterSpacing: '0.05em' }}
-            >
-              Giờ
+
+          {/* Platform / Location */}
+          {(event.platform || event.location) && (
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: '#F5F3EF' }}>
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-[16px] flex-shrink-0"
+                style={{ background: event.event_type === 'online' ? '#DBEAFE' : '#FEF4D6' }}
+              >
+                {event.event_type === 'online' ? '🎥' : '📍'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-semibold text-ink truncate">
+                  {event.platform || event.location}
+                </div>
+                <div className="text-[11px] text-i3">
+                  {isPast && event.recording_url
+                    ? 'Đã kết thúc · Recording đã sẵn sàng'
+                    : isLive || isSoon
+                      ? 'Link đã sẵn sàng'
+                      : event.event_type === 'offline'
+                        ? 'Trực tiếp tại địa điểm'
+                        : 'Link sẽ mở trước 15 phút'}
+                </div>
+              </div>
+              {(isLive || isSoon) && event.meeting_url && (
+                <button
+                  onClick={() => window.open(event.meeting_url!, '_blank', 'noopener,noreferrer')}
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-md flex-shrink-0"
+                  style={{ background: '#FEF4D6', color: '#D4920A' }}
+                >
+                  Mở
+                </button>
+              )}
             </div>
-            <div className="text-[13px] font-semibold text-ink">
-              {date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-              {' – '}
-              {endDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+          )}
+
+          {/* Instructor */}
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: '#F5F3EF' }}>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0 text-white"
+              style={{ background: 'linear-gradient(135deg,#F5B731,#D4920A)' }}
+            >
+              {event.instructor_name
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-semibold text-ink truncate">
+                {event.instructor_name}
+              </div>
+              <div className="text-[11px] text-i3">Giảng viên · Nedu</div>
             </div>
           </div>
         </div>
 
-        {event.course_name && (
-          <div className="rounded-xl px-3 py-2.5" style={{ background: '#F5F3EF' }}>
-            <div
-              className="font-mono text-[10px] font-semibold uppercase text-i3 mb-0.5"
-              style={{ letterSpacing: '0.05em' }}
-            >
-              Khoá học
-            </div>
-            <div className="text-[13px] font-semibold text-ink">{event.course_name}</div>
-            <div className="text-[11px] text-i3 mt-0.5">{event.instructor_name}</div>
-          </div>
-        )}
+        {/* Primary CTA */}
+        <button
+          onClick={handlePrimaryAction}
+          className="w-full py-3.5 rounded-xl text-[14px] font-semibold transition-opacity flex items-center justify-center gap-2"
+          style={{
+            background: isLive ? '#C0392B' : isSoon ? '#F5B731' : isDone ? '#1A1816' : '#1A1816',
+            color: isSoon ? '#1A1816' : '#F5B731',
+          }}
+        >
+          {isLive && <span>▶</span>}
+          {isSoon && <span>▶</span>}
+          {isFuture && <span>📅</span>}
+          {isDone && <span>▶</span>}
+          {isMissed && <span>🎥</span>}
+          {statusInfo.ctaLabel}
+        </button>
 
-        {(event.platform || event.location) && (
-          <div className="rounded-xl px-3 py-2.5" style={{ background: '#F5F3EF' }}>
-            <div
-              className="font-mono text-[10px] font-semibold uppercase text-i3 mb-0.5"
-              style={{ letterSpacing: '0.05em' }}
-            >
-              {event.location ? 'Địa điểm' : 'Nền tảng'}
-            </div>
-            <div className="text-[13px] font-semibold text-ink">
-              {event.location || event.platform}
-            </div>
-          </div>
-        )}
-
-        {event.description && (
-          <p className="text-[13px] text-i2 leading-relaxed">{event.description}</p>
-        )}
-
-        {/* Join button (online events) */}
-        {event.event_type === 'online' && (
+        {/* Secondary actions */}
+        {isPast && (
           <button
-            onClick={() => {
-              if (event.is_joinable && event.meeting_url) {
-                window.open(event.meeting_url, '_blank', 'noopener,noreferrer')
-              } else if (!event.is_joinable) {
-                toast('Sự kiện chưa bắt đầu', 'info')
-              }
-            }}
-            disabled={!event.is_joinable}
-            className="w-full py-3 rounded-xl text-[14px] font-semibold transition-opacity disabled:opacity-60"
+            onClick={() => toast('Mở danh sách bài tập về nhà', 'info')}
+            className="w-full py-3 rounded-xl text-[13px] font-semibold transition-colors"
             style={{
-              background: event.is_joinable ? '#1A1816' : '#F5B731',
-              color: event.is_joinable ? '#F5B731' : '#1A1816',
+              background: 'transparent',
+              color: '#1A1816',
+              border: '1.5px solid rgba(26,24,22,0.15)',
             }}
           >
-            {event.is_joinable
-              ? 'Vào lớp →'
-              : countdown !== null && countdown > 0
-                ? `Mở sau ${formatCountdown(countdown)}`
-                : 'Chưa đến giờ'}
+            ↓ Vẫn làm bài tập về nhà
           </button>
         )}
 
-        {/* Add to calendar */}
-        <button
-          onClick={() => setPickerOpen(true)}
-          className="w-full py-3 rounded-xl text-[14px] font-semibold transition-colors flex items-center justify-center gap-2"
-          style={{
-            background: 'transparent',
-            color: '#1A1816',
-            border: '1.5px solid #1A1816',
-          }}
-        >
-          <span>📅</span>
-          Thêm vào lịch
-        </button>
+        {isFuture && (
+          <button
+            onClick={() => downloadIcs(event)}
+            className="w-full py-3 rounded-xl text-[13px] font-semibold transition-colors"
+            style={{
+              background: 'transparent',
+              color: '#1A1816',
+              border: '1.5px solid rgba(26,24,22,0.15)',
+            }}
+          >
+            🍎 Tải .ics (Apple/Outlook)
+          </button>
+        )}
 
-        <p className="text-[10px] text-i3 text-center px-2 leading-relaxed">
-          Đồng bộ với Google Calendar, Apple Calendar, Outlook để nhận nhắc nhở tự động
-        </p>
+        {/* PREP MATERIALS (pre-class) */}
+        {!isPast && event.prep_items && event.prep_items.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2 px-1">
+              <div
+                className="font-mono text-[10px] font-bold uppercase text-i3"
+                style={{ letterSpacing: '0.06em' }}
+              >
+                Chuẩn bị trước buổi
+              </div>
+              <div
+                className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                style={{ background: '#FEF4D6', color: '#D4920A' }}
+              >
+                {prepDone}/{prepTotal}
+              </div>
+            </div>
+            <div
+              className="bg-surface rounded-[14px] px-3 py-2 space-y-1"
+              style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+            >
+              {event.prep_items.map((item, i) => {
+                const checked = prepChecked.has(i)
+                return (
+                  <button
+                    key={i}
+                    onClick={() => togglePrep(i)}
+                    className="w-full flex items-start gap-3 px-2 py-2 rounded-lg hover:bg-s2 transition-colors text-left"
+                  >
+                    <div
+                      className="w-[18px] h-[18px] rounded-md flex items-center justify-center flex-shrink-0 mt-0.5"
+                      style={{
+                        background: checked ? '#1A1816' : 'transparent',
+                        border: checked ? '1.5px solid #1A1816' : '1.5px solid rgba(26,24,22,0.20)',
+                      }}
+                    >
+                      {checked && (
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                          <path
+                            d="M1.5 5L4 7.5L8.5 2"
+                            stroke="#F5B731"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <span
+                      className="text-[13px] flex-1"
+                      style={{
+                        color: checked ? '#8A8480' : '#4A4540',
+                        textDecoration: checked ? 'line-through' : 'none',
+                      }}
+                    >
+                      {item}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* POST MATERIALS (after class) */}
+        {isPast && (
+          <div>
+            <div
+              className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
+              style={{ letterSpacing: '0.06em' }}
+            >
+              Tài liệu sau buổi
+            </div>
+            <div
+              className="bg-surface rounded-[14px] divide-y"
+              style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+            >
+              <MaterialRow icon="🎥" title="Recording đầy đủ" sub="~1h 30 · Cần xem để hiểu" />
+              <div style={{ borderTop: '1px solid rgba(26,24,22,0.08)' }} />
+              <MaterialRow icon="📄" title="Slide buổi học (PDF)" sub="42 trang" />
+              <div style={{ borderTop: '1px solid rgba(26,24,22,0.08)' }} />
+              <MaterialRow icon="✨" title="Tóm tắt AI · 7 điểm chính" sub="2 phút đọc" badge="MỚI" />
+            </div>
+          </div>
+        )}
+
+        {/* REMINDERS (future + soon only) */}
+        {(isFuture || isSoon) && (
+          <div>
+            <div
+              className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
+              style={{ letterSpacing: '0.06em' }}
+            >
+              Nhắc tôi
+            </div>
+            <div
+              className="bg-surface rounded-[14px]"
+              style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+            >
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-[16px]">🔔</span>
+                  <div>
+                    <div className="text-[13px] font-semibold text-ink">Push notification</div>
+                    <div className="text-[11px] text-i3 mt-0.5">
+                      {enabledReminders.size}/{REMINDER_OPTIONS.length} mức đã bật
+                    </div>
+                  </div>
+                </div>
+                <Toggle on={pushOn} onChange={() => setPushOn(!pushOn)} />
+              </div>
+              {pushOn &&
+                REMINDER_OPTIONS.map((r, i) => {
+                  const enabled = enabledReminders.has(r.key)
+                  return (
+                    <div key={r.key}>
+                      {i === 0 && <div style={{ borderTop: '1px solid rgba(26,24,22,0.08)' }} />}
+                      <button
+                        onClick={() => toggleReminder(r.key)}
+                        className="w-full flex items-center justify-between px-4 py-2.5 text-left active:bg-s2 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-[18px] h-[18px] rounded-md flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: enabled ? '#1A1816' : 'transparent',
+                              border: enabled ? '1.5px solid #1A1816' : '1.5px solid rgba(26,24,22,0.20)',
+                            }}
+                          >
+                            {enabled && (
+                              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                <path
+                                  d="M1.5 5L4 7.5L8.5 2"
+                                  stroke="#F5B731"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                          <span className="text-[13px] text-ink">{r.label}</span>
+                        </div>
+                        <span className="font-mono text-[11px] text-i3">{r.offset}</span>
+                      </button>
+                      {i < REMINDER_OPTIONS.length - 1 && (
+                        <div style={{ borderTop: '1px solid rgba(26,24,22,0.06)' }} />
+                      )}
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        {event.description && (
+          <div>
+            <div
+              className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
+              style={{ letterSpacing: '0.06em' }}
+            >
+              Buổi học
+            </div>
+            <p className="text-[13px] text-i2 leading-relaxed px-1">{event.description}</p>
+          </div>
+        )}
+
+        {/* AI tutor hint (past only) */}
+        {isPast && (
+          <div
+            className="rounded-xl px-3 py-2.5 flex items-start gap-2"
+            style={{
+              background: 'linear-gradient(135deg,#EDE9FE,#DDD6FE)',
+              border: '1px solid rgba(91,33,182,0.15)',
+            }}
+          >
+            <span className="text-[16px] mt-0.5">✨</span>
+            <span className="text-[11px] leading-relaxed" style={{ color: '#5B21B6' }}>
+              <strong>Tự ôn:</strong> Bạn có thể đặt câu hỏi với BOT 24/24 về buổi học này.
+              App sẽ trả lời dựa trên nội dung và recording.
+            </span>
+          </div>
+        )}
       </div>
-
-      <AddToCalendarPicker
-        open={pickerOpen}
-        event={event}
-        onClose={() => setPickerOpen(false)}
-      />
     </BottomSheet>
+  )
+}
+
+function MaterialRow({
+  icon,
+  title,
+  sub,
+  badge,
+}: {
+  icon: string
+  title: string
+  sub: string
+  badge?: string
+}) {
+  return (
+    <button
+      onClick={() => toast(`Mở ${title}`, 'info')}
+      className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-s2 transition-colors"
+    >
+      <div className="text-[20px] flex-shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-semibold text-ink truncate">{title}</div>
+        <div className="text-[11px] text-i3 mt-0.5">{sub}</div>
+      </div>
+      {badge && (
+        <span
+          className="text-[9px] font-bold px-2 py-0.5 rounded-md flex-shrink-0"
+          style={{ background: '#FEF4D6', color: '#D4920A' }}
+        >
+          {badge}
+        </span>
+      )}
+      <span className="text-i3 text-[14px]">›</span>
+    </button>
+  )
+}
+
+function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
+  return (
+    <button
+      onClick={onChange}
+      className="relative rounded-[12px] flex-shrink-0 transition-colors"
+      style={{
+        width: 42,
+        height: 24,
+        background: on ? '#F5B731' : 'rgba(26,24,22,0.10)',
+      }}
+    >
+      <span
+        className="absolute top-[3px] left-[3px] w-[18px] h-[18px] rounded-full bg-white transition-transform"
+        style={{
+          transform: on ? 'translateX(18px)' : 'translateX(0)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+        }}
+      />
+    </button>
   )
 }

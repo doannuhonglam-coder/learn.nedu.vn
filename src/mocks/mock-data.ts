@@ -104,12 +104,88 @@ const mockLessonDetail = {
   notes: 'Ghi chú cá nhân: Nhớ thực hành kỹ thuật phản chiếu...',
 }
 
+// Generate dynamic event dates so demo shows all 5 status states
+const __now = Date.now()
+const __atOffset = (offsetMs: number, durationMin: number) => ({
+  start_time: new Date(__now + offsetMs).toISOString(),
+  end_time: new Date(__now + offsetMs + durationMin * 60_000).toISOString(),
+})
+
 const mockEvents = [
-  { id: 'evt-001', title: 'Live Q&A: Cảm Xúc Trong Lãnh Đạo', event_type: 'online', start_time: '2026-04-15T19:00:00+07:00', end_time: '2026-04-15T20:30:00+07:00', platform: 'Zoom', location: null, course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Chị Nhí Lê', description: 'Buổi Q&A trực tuyến.', meeting_url: null, is_joinable: false, join_available_in_seconds: 7200, ical_url: '#' },
-  { id: 'evt-002', title: 'Retreat Tĩnh Tâm Đà Lạt', event_type: 'retreat', start_time: '2026-05-01T08:00:00+07:00', end_time: '2026-05-03T17:00:00+07:00', platform: null, location: 'Đà Lạt, Lâm Đồng', course_id: 'crs-002', course_name: 'Retreat Tĩnh Tâm Đà Lạt', instructor_name: 'Chị Nhí Lê', description: 'Retreat 3 ngày 2 đêm.', meeting_url: null, is_joinable: false, join_available_in_seconds: null, ical_url: '#' },
-  { id: 'evt-003', title: 'Workshop Offline: Hơi Thở & Năng Lượng', event_type: 'offline', start_time: '2026-04-20T09:00:00+07:00', end_time: '2026-04-20T12:00:00+07:00', platform: null, location: 'Nedu HQ - Q3, HCM', course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Chị Nhí Lê', description: 'Workshop thực hành.', meeting_url: null, is_joinable: false, join_available_in_seconds: null, ical_url: '#' },
-  { id: 'evt-004', title: 'Coaching Session #4', event_type: 'online', start_time: '2026-04-22T10:00:00+07:00', end_time: '2026-04-22T11:00:00+07:00', platform: 'Google Meet', location: null, course_id: 'crs-004', course_name: 'Coaching 1:1 với Chị Nhí', instructor_name: 'Chị Nhí Lê', description: 'Buổi coaching lần 4.', meeting_url: null, is_joinable: false, join_available_in_seconds: null, ical_url: '#' },
-  { id: 'evt-005', title: 'Live Class: Module 3 Review', event_type: 'online', start_time: '2026-04-28T19:30:00+07:00', end_time: '2026-04-28T21:00:00+07:00', platform: 'Zoom', location: null, course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Chị Nhí Lê', description: 'Ôn tập Module 3.', meeting_url: null, is_joinable: false, join_available_in_seconds: null, ical_url: '#' },
+  // LIVE — started 30 min ago, still running for 1h
+  {
+    id: 'evt-001', title: 'Live Class · Thiết Kế Bản Thân', event_type: 'online',
+    ...__atOffset(-30 * 60_000, 120),
+    platform: 'Zoom', location: null,
+    course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Chị Nhí Lê',
+    description: 'Quản lý cảm xúc trong gia đình — buổi học live với case study từ học viên K12.',
+    meeting_url: 'https://zoom.us/j/123456789',
+    is_joinable: true, join_available_in_seconds: 0, ical_url: '#',
+    module_title: 'Cohort K12 · Buổi 6/12',
+    agenda: ['Ôn tập kỹ năng lắng nghe chủ động', 'Phân tích case study', 'Q&A bài tập tuần 3', 'Hướng dẫn module 4'],
+    prep_items: ['Hoàn thành Bài 6: Shadow work', 'Xem slide chương 3', 'Chuẩn bị 1 câu hỏi'],
+    meeting_id: '123 4567 8901', meeting_passcode: 'NEDU2026',
+    will_be_recorded: true, recording_url: null,
+  },
+  // SOON — starts in 28 min
+  {
+    id: 'evt-002', title: '1:1 Coaching · Buổi 4 với Nhi Lê', event_type: 'online',
+    ...__atOffset(28 * 60_000, 90),
+    platform: 'Google Meet', location: null,
+    course_id: 'crs-004', course_name: 'Coaching 1:1 với Chị Nhí', instructor_name: 'Chị Nhí Lê',
+    description: 'Buổi coaching 1:1 chuẩn bị tâm thế muốn thảo luận. Đọc lại ghi chú buổi 3 trước khi vào.',
+    meeting_url: 'https://meet.google.com/abc-defg-hij',
+    is_joinable: false, join_available_in_seconds: 1680, ical_url: '#',
+    module_title: 'Coaching · Buổi 4/6',
+    agenda: ['Review homework buổi 3', 'Xác định pattern mới', 'Kế hoạch hành động 2 tuần', 'Đặt mục tiêu buổi 5'],
+    prep_items: ['Bài đọc · 5 câu hỏi tự vấn (8 trang PDF · chưa mở)', 'Ghi 3 trigger cảm xúc tuần qua'],
+    meeting_id: 'abc-defg-hij', meeting_passcode: null,
+    will_be_recorded: true, recording_url: null,
+  },
+  // DONE — ended 2h ago, recording available
+  {
+    id: 'evt-003', title: 'Live Class · Thiết Kế Bản Thân', event_type: 'online',
+    ...__atOffset(-4 * 3600_000, 120),
+    platform: 'Zoom', location: null,
+    course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Chị Nhí Lê',
+    description: 'Buổi học đã hoàn thành. Recording + slide đã sẵn sàng để xem lại.',
+    meeting_url: 'https://zoom.us/j/111222333',
+    is_joinable: false, join_available_in_seconds: null, ical_url: '#',
+    module_title: 'Cohort K12 · Buổi 5/12',
+    agenda: ['Recap 4 bài học chính', 'Live demo', 'Thảo luận nhóm'],
+    prep_items: [],
+    meeting_id: '111 222 333', meeting_passcode: null,
+    will_be_recorded: true, recording_url: 'https://zoom.us/rec/play/abc',
+  },
+  // FUTURE — starts in 5 days
+  {
+    id: 'evt-004', title: 'Workshop Chánh Niệm · 3 ngày', event_type: 'offline',
+    ...__atOffset(5 * 86_400_000, 180),
+    platform: null, location: 'Q3 TPHCM · 45 Nguyễn Đình Chiểu',
+    course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Hoài An',
+    description: 'Workshop nội trú 3 ngày tại trung tâm thiền Q3. Mang trang phục thoải mái, nước uống, và nhật ký cá nhân.',
+    meeting_url: null, is_joinable: false, join_available_in_seconds: null, ical_url: '#',
+    module_title: 'Bonus Workshop',
+    agenda: ['Day 1: Hơi thở chánh niệm', 'Day 2: Body scan', 'Day 3: Tích hợp & cam kết'],
+    prep_items: ['Mặc quần áo thoải mái', 'Mang chai nước cá nhân', 'Đến trước 15 phút check-in', 'Nhật ký cá nhân'],
+    meeting_id: null, meeting_passcode: null,
+    will_be_recorded: false, recording_url: null,
+  },
+  // MISSED — ended 3 days ago, no recording
+  {
+    id: 'evt-005', title: 'Live Class cuối · Bảo vệ đồ án', event_type: 'online',
+    ...__atOffset(-3 * 86_400_000, 120),
+    platform: 'Zoom', location: null,
+    course_id: 'crs-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', instructor_name: 'Chị Nhí Lê',
+    description: 'Buổi cuối khoá — bạn không tham gia được. Recording chưa sẵn sàng, hãy theo dõi thông báo.',
+    meeting_url: 'https://zoom.us/j/444555666',
+    is_joinable: false, join_available_in_seconds: null, ical_url: '#',
+    module_title: 'Cohort K12 · Buổi 4/12 · Bạn không tham gia',
+    agenda: ['Bảo vệ đồ án nhóm', 'Feedback từ Chị Nhí', 'Lễ tốt nghiệp Cohort'],
+    prep_items: [],
+    meeting_id: '444 555 666', meeting_passcode: null,
+    will_be_recorded: true, recording_url: null,
+  },
 ]
 
 const mockPayments = [

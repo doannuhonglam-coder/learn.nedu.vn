@@ -218,6 +218,13 @@ export interface ScheduleEvent extends UpcomingEventSummary {
   is_joinable: boolean
   join_available_in_seconds: number | null
   ical_url: string
+  module_title?: string | null
+  agenda?: string[]
+  prep_items?: string[]
+  meeting_id?: string | null
+  meeting_passcode?: string | null
+  will_be_recorded?: boolean
+  recording_url?: string | null
 }
 
 // ── Assignment ───────────────────────────────────────────────
