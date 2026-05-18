@@ -1,19 +1,19 @@
 // src/mocks/config.ts
-// Helpers cho MSW handlers — resolve current user từ Supabase session
+// Helpers cho MSW handlers — resolve current user từ auth store
 // + các response shape chuẩn (NestJS-style).
 import { HttpResponse } from 'msw'
-import { supabase } from '@shared/config/supabase'
+import { useAuthStore } from '@shared/stores/auth.store'
 import { MOCK_PERSONS, type MockPerson } from './data/persons'
 
-export async function getCurrentMockUserId(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session?.user?.email) return null
-  return MOCK_PERSONS.find(p => p.email === session.user!.email)?.id ?? null
+export function getCurrentMockUserId(): string | null {
+  const user = useAuthStore.getState().user
+  if (!user?.email) return null
+  return MOCK_PERSONS.find((p) => p.email === user.email)?.id ?? null
 }
 
-export async function getCurrentMockPerson(): Promise<MockPerson | null> {
-  const id = await getCurrentMockUserId()
-  return id ? MOCK_PERSONS.find(p => p.id === id) ?? null : null
+export function getCurrentMockPerson(): MockPerson | null {
+  const id = getCurrentMockUserId()
+  return id ? MOCK_PERSONS.find((p) => p.id === id) ?? null : null
 }
 
 export const unauthorized = () =>
