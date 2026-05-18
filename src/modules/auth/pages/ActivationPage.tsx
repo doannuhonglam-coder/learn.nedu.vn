@@ -30,15 +30,17 @@ export default function ActivationPage() {
     setError(null)
     try {
       const res = await authService.activate(token, password)
-      setSession(res.access_token, res.user)
+      setSession(res.access_token, res.refresh_token, res.user)
       toast('Chào mừng đến với Nedu! 🎉', 'success')
       navigate('/home', { replace: true })
     } catch (err: unknown) {
-      const apiErr = err as { code?: string }
-      if (apiErr.code === 'TOKEN_EXPIRED') {
-        setError('Link đã hết hạn · Liên hệ Nedu để được gửi lại')
+      const apiErr = err as { status?: number; error?: string; message?: string }
+      if (apiErr.status === 400) {
+        setError(apiErr.message ?? 'Link không hợp lệ hoặc đã hết hạn')
+      } else if (apiErr.status === 409) {
+        setError('Tài khoản đã có mật khẩu. Hãy đăng nhập hoặc dùng quên mật khẩu.')
       } else {
-        setError('Link không hợp lệ')
+        setError('Không thể kích hoạt — vui lòng thử lại')
       }
     } finally {
       setLoading(false)

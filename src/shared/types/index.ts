@@ -1,7 +1,12 @@
 // ── Auth ────────────────────────────────────────────────────
+// StudentProfile = full profile sau khi hydrate qua GET /api/learn/me.
+// Login response từ auth-central trả về AuthUser (subset) — xem
+// `shared/config/auth-central-client.ts`. Learn-specific fields nullable
+// vì có thể chưa hydrate khi vừa login.
 export interface StudentProfile {
   id: string
-  full_name: string
+  person_id: string
+  full_name: string | null
   email: string
   phone: string | null
   avatar_url: string | null
@@ -10,13 +15,6 @@ export interface StudentProfile {
   activated_at: string | null
   created_at: string
   consultant_name: string | null
-}
-
-export interface LoginResponse {
-  access_token: string
-  refresh_token: string
-  expires_at: string
-  user: StudentProfile
 }
 
 // ── Home ────────────────────────────────────────────────────
