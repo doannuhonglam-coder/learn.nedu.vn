@@ -31,10 +31,14 @@ function getNotifRoute(notif: NotificationSummary): string {
 }
 
 export function NotifModal({ open, onClose }: NotifModalProps) {
-  const { data: notifications, isLoading } = useNotifications()
+  const { data, isLoading } = useNotifications()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setNotifCount = useAuthStore((s) => s.setNotifCount)
+
+  // BE shape `{items, unread_count}` — handle khi query fail (data = undefined).
+  const items = data?.items ?? []
+  const unreadCount = data?.unread_count ?? 0
 
   const markAllMutation = useMutation({
     mutationFn: () => notificationsService.markRead(),
@@ -51,13 +55,11 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
     onClose()
   }
 
-  const unreadCount = notifications?.filter((n) => !n.is_read).length || 0
-
   return (
     <BottomSheet open={open} onClose={onClose} title="Thông báo">
       {isLoading ? (
         <div className="flex justify-center py-8"><Spinner /></div>
-      ) : !notifications || notifications.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="py-8 text-center text-gray-400 text-sm">
           Không có thông báo mới
         </div>
@@ -76,7 +78,7 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
             </div>
           )}
           <div className="space-y-2">
-            {notifications.map((notif) => (
+            {items.map((notif) => (
               <button
                 key={notif.id}
                 onClick={() => handleItemClick(notif)}

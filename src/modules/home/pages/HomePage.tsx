@@ -77,7 +77,7 @@ export default function HomePage() {
       />
 
       <CourseModal
-        courseId={courseModalId}
+        runId={courseModalId}
         initialTab={courseModalTab}
         onClose={() => { setCourseModalId(null); setCourseModalTab(undefined) }}
       />

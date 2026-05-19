@@ -1,23 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { profileService } from '../services/profile.service'
 
-export function useProfile() {
-  return useQuery({
-    queryKey: ['profile'],
-    queryFn: profileService.getProfile,
-  })
-}
-
+// useProfile + useStreak removed — both fields are sourced from useMe()
+// (shared/hooks/useMe). Only metaphysical facets still has dedicated endpoint
+// because vault cache logic is separate.
 export function useMetaphysical() {
   return useQuery({
     queryKey: ['profile', 'metaphysical'],
     queryFn: profileService.getMetaphysical,
-  })
-}
-
-export function useStreak() {
-  return useQuery({
-    queryKey: ['profile', 'streak'],
-    queryFn: profileService.getStreak,
   })
 }

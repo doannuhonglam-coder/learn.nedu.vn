@@ -1,18 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const mockProfile = {
-  id: 'stu-001',
-  full_name: 'Nguyễn Minh Anh',
-  email: 'minhanh@example.com',
-  phone: '0901234567',
-  avatar_url: null,
-  student_code: 'NEDU-2026-001234',
-  is_active: true,
-  activated_at: '2026-01-15T10:00:00Z',
-  created_at: '2026-01-10T08:00:00Z',
-  consultant_name: 'Chị Nhí',
-}
-
 // 5-system vault facets — opaque jsonb passthrough match BE
 // /api/learn/profile/metaphysical contract. Mock với 4/5 facets có sẵn
 // + 1 chưa compute (tu_vi) để FE test "đang phân tích" state per-facet.
@@ -46,27 +33,30 @@ const mockMetaphysical = {
   is_available: true,
 }
 
-const mockStreak = {
-  current_streak_weeks: 4,
-  longest_streak_weeks: 8,
-  total_lessons_completed: 32,
-  last_activity_at: '2026-04-12T15:30:00Z',
+// /api/learn/me — mock minimal cho ProfilePage hydration trong mock mode.
+const mockMe = {
+  user_id: 'usr-001',
+  email: 'minhanh@example.com',
+  full_name: 'Nguyễn Minh Anh',
+  avatar_url: null,
+  roles: ['learner'],
+  learner_state: {
+    student_code: 'NEDU-2026-001234',
+    consultant_name: 'Chị Nhí',
+    activated_at: '2026-01-15T10:00:00Z',
+    streak_current_weeks: 4,
+    streak_longest_weeks: 8,
+    last_lesson_completed_at: '2026-04-12T15:30:00Z',
+    noi_status: 'active',
+  },
 }
 
 export const profileHandlers = [
-  http.get(`*/api/learn/profile`, () => {
-    return HttpResponse.json(mockProfile)
+  http.get(`*/api/learn/me`, () => {
+    return HttpResponse.json(mockMe)
   }),
 
   http.get(`*/api/learn/profile/metaphysical`, () => {
     return HttpResponse.json(mockMetaphysical)
-  }),
-
-  http.get(`*/api/learn/profile/streak`, () => {
-    return HttpResponse.json(mockStreak)
-  }),
-
-  http.get(`*/api/learn/profile/metaphysical/pdf`, () => {
-    return new HttpResponse(null, { status: 200, headers: { 'Content-Type': 'application/pdf' } })
   }),
 ]

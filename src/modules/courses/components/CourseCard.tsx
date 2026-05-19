@@ -1,11 +1,11 @@
-import type { EnrollmentSummary, CourseType } from '../../../shared/types'
+import type { CourseSummary, CourseType } from '../../../shared/types'
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar'
 import { CountdownTimer } from './CountdownTimer'
 import { toast } from '../../../shared/components/ui/Toast'
 
 interface CourseCardProps {
-  enrollment: EnrollmentSummary
-  onOpenCourse: (courseId: string, tab?: string) => void
+  course: CourseSummary
+  onOpenCourse: (runId: string, tab?: string) => void
 }
 
 const typeConfig: Record<CourseType, { label: string; icon: string; bg: string; color: string }> = {
@@ -32,9 +32,10 @@ function calcNights(startISO: string, endISO: string): { days: number; nights: n
   return { days, nights: Math.max(days - 1, 0) }
 }
 
-export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
-  const { course } = enrollment
+export function CourseCard({ course, onOpenCourse }: CourseCardProps) {
   const config = typeConfig[course.course_type]
+  // BE Phase 1 không expose enrollment_status — derive completion từ progress.
+  const isCompleted = course.progress_percent >= 100
 
   return (
     <div
@@ -52,7 +53,7 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
         >
           {config.icon} {config.label}
         </span>
-        {enrollment.status === 'completed' && (
+        {isCompleted && (
           <span className="text-[10px] font-semibold text-gold-d">✓ Hoàn thành</span>
         )}
       </div>
@@ -60,7 +61,9 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
       <h3 className="font-display text-[14px] font-semibold text-ink mt-2 leading-[1.35]">
         {course.name}
       </h3>
-      <p className="text-[11px] text-i3 mt-0.5">{course.instructor_name}</p>
+      {course.instructor_name && (
+        <p className="text-[11px] text-i3 mt-0.5">{course.instructor_name}</p>
+      )}
 
       {/* Retreat: date range + days/nights + countdown */}
       {course.course_type === 'retreat' && course.retreat_date && (
@@ -105,7 +108,7 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
               📚 Module {course.current_module}/{course.total_modules}
             </p>
           )}
-          <ProgressBar percent={enrollment.progress_percent} showLabel />
+          <ProgressBar percent={course.progress_percent} showLabel />
           {course.metaphysical_match_score && course.metaphysical_match_score > 70 && (
             <button
               onClick={(e) => {
@@ -129,8 +132,8 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
               📚 Module {course.current_module}/{course.total_modules} · Tự học
             </p>
           )}
-          <ProgressBar percent={enrollment.progress_percent} showLabel />
-          {enrollment.status === 'active' && (
+          <ProgressBar percent={course.progress_percent} showLabel />
+          {!isCompleted && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -154,7 +157,7 @@ export function CourseCard({ enrollment, onOpenCourse }: CourseCardProps) {
               Còn {(course.coaching_sessions_total || 0) - (course.coaching_sessions_completed || 0)} buổi
             </span>
           </p>
-          <ProgressBar percent={enrollment.progress_percent} showLabel />
+          <ProgressBar percent={course.progress_percent} showLabel />
         </div>
       )}
     </div>

@@ -49,18 +49,20 @@ export function RecentCoursesList({ courses, onOpenCourse }: RecentCoursesListPr
               <div className="font-display text-[14px] font-semibold text-ink leading-[1.35] mb-2">
                 {course.name}
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-i3 mb-2.5">
-                <span
-                  className="w-[18px] h-[18px] rounded-full inline-flex items-center justify-center text-[9px] font-extrabold flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #F5B731, #D4920A)',
-                    color: '#1A1816',
-                  }}
-                >
-                  {course.instructor_name.charAt(0).toUpperCase()}
-                </span>
-                {course.instructor_name}
-              </div>
+              {course.instructor_name && (
+                <div className="flex items-center gap-1.5 text-[11px] text-i3 mb-2.5">
+                  <span
+                    className="w-[18px] h-[18px] rounded-full inline-flex items-center justify-center text-[9px] font-extrabold flex-shrink-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #F5B731, #D4920A)',
+                      color: '#1A1816',
+                    }}
+                  >
+                    {course.instructor_name.charAt(0).toUpperCase()}
+                  </span>
+                  {course.instructor_name}
+                </div>
+              )}
             </button>
           )
         })}

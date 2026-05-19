@@ -1,11 +1,13 @@
 import { api } from '../../../shared/config/api-client'
-import type { EnrollmentSummary, CourseDetail, LessonSummary, LessonDetail, LessonProgressResponse, CourseMaterial } from '../../../shared/types'
+import type { CourseSummary, CourseDetail, LessonSummary, LessonDetail, LessonProgressResponse, CourseMaterial } from '../../../shared/types'
 
+// `runId` = course_runs.id (sellable instance K13 vs K14). FE thường gọi
+// param này là `courseId` ở route URL — semantic BE là run_id.
 export const coursesService = {
-  getEnrollments: () => api.get<EnrollmentSummary[]>('/enrollments'),
-  getCourseDetail: (courseId: string) => api.get<CourseDetail>(`/courses/${courseId}`),
-  getCourseLessons: (courseId: string) => api.get<LessonSummary[]>(`/courses/${courseId}/lessons`),
-  getCourseMaterials: (courseId: string) => api.get<CourseMaterial[]>(`/courses/${courseId}/materials`),
+  listCourses: () => api.get<CourseSummary[]>('/courses'),
+  getCourseDetail: (runId: string) => api.get<CourseDetail>(`/courses/${runId}`),
+  getCourseLessons: (runId: string) => api.get<LessonSummary[]>(`/courses/${runId}/lessons`),
+  getCourseMaterials: (runId: string) => api.get<CourseMaterial[]>(`/courses/${runId}/materials`),
   getLessonDetail: (lessonId: string) => api.get<LessonDetail>(`/lessons/${lessonId}`),
   postLessonProgress: (lessonId: string, watchPercent: number) =>
     api.post<LessonProgressResponse>(`/lessons/${lessonId}/progress`, { watch_percent: watchPercent }),

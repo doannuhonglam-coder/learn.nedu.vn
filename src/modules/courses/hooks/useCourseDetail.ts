@@ -1,19 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { coursesService } from '../services/courses.service'
 
-export function useCourseDetail(courseId: string | null) {
+export function useCourseDetail(runId: string | null) {
   return useQuery({
-    queryKey: ['course', courseId],
-    queryFn: () => coursesService.getCourseDetail(courseId!),
-    enabled: !!courseId,
+    queryKey: ['course', runId],
+    queryFn: () => coursesService.getCourseDetail(runId!),
+    enabled: !!runId,
   })
 }
 
-export function useCourseLessons(courseId: string | null) {
+export function useCourseLessons(runId: string | null) {
   return useQuery({
-    queryKey: ['course', courseId, 'lessons'],
-    queryFn: () => coursesService.getCourseLessons(courseId!),
-    enabled: !!courseId,
+    queryKey: ['course', runId, 'lessons'],
+    queryFn: () => coursesService.getCourseLessons(runId!),
+    enabled: !!runId,
   })
 }
 

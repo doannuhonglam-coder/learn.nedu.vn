@@ -49,14 +49,21 @@ export interface ContinueLearning {
 // ── Course ───────────────────────────────────────────────────
 export type CourseType = 'retreat' | 'cohort' | 'on_demand' | 'coaching'
 
+// CourseSummary = 1 row trong list /api/learn/courses — flat shape match BE.
+// `id` = course_run_id (sellable instance, K13 vs K14). `enrollment_id` riêng
+// để FE thao tác progress/submit. BE Phase 1 trả `instructor_name` + `thumbnail_url`
+// null (defer follow-up).
 export interface CourseSummary {
   id: string
+  enrollment_id: string
   name: string
   slug: string
   course_type: CourseType
   status: 'draft' | 'published' | 'archived'
-  instructor_name: string
+  instructor_name: string | null
   thumbnail_url: string | null
+  description: string | null
+  progress_percent: number
   retreat_date: string | null
   retreat_end_date?: string | null
   retreat_countdown_seconds: number | null
@@ -142,22 +149,9 @@ export interface LessonProgressResponse {
 }
 
 // ── Enrollment ───────────────────────────────────────────────
-export interface EnrollmentSummary {
-  id: string
-  course: CourseSummary
-  status: 'active' | 'completed' | 'expired' | 'cancelled'
-  progress_percent: number
-  enrolled_at: string
-  expired_at: string | null
-}
-
-export interface EnrollmentDetail extends EnrollmentSummary {
-  modules_completed: number
-  modules_total: number
-  lessons_completed: number
-  lessons_total: number
-  certificates: CertificateSummary[]
-}
+// Note: enrollment-level data đã merge vào CourseSummary (enrollment_id +
+// progress_percent flat). BE Phase 1 không expose enrollment_status separately
+// — FE derive completed = progress_percent === 100 nếu cần.
 
 // ── Payment / installment ────────────────────────────────────
 // Removed: Nedu đã bỏ trả góp (A8 payment bridge dropped). FE không còn
@@ -364,12 +358,28 @@ export interface MetaphysicalProfile {
   is_available: boolean
 }
 
-// ── Streak ───────────────────────────────────────────────────
-export interface StreakStats {
-  current_streak_weeks: number
-  longest_streak_weeks: number
-  total_lessons_completed: number
-  last_activity_at: string | null
+// StreakStats type removed — fields merged into LearnMeLearnerState (BE /me).
+
+// ── Me (GET /api/learn/me) ───────────────────────────────────
+// LearnerState là sidecar 1:1 với users (M01). `learner_state` null khi user
+// chưa hydrate learn-specific data (chưa enroll khoá nào hoặc backfill chưa chạy).
+export interface LearnMeLearnerState {
+  student_code: string | null
+  consultant_name: string | null
+  activated_at: string | null
+  streak_current_weeks: number
+  streak_longest_weeks: number
+  last_lesson_completed_at: string | null
+  noi_status: string | null
+}
+
+export interface LearnMeResponse {
+  user_id: string
+  email: string
+  full_name: string
+  avatar_url: string | null
+  roles: string[]
+  learner_state: LearnMeLearnerState | null
 }
 
 // ── Notification ─────────────────────────────────────────────
@@ -382,6 +392,12 @@ export interface NotificationSummary {
   created_at: string
   is_read: boolean
   action_url: string | null
+}
+
+// BE wrap items + unread_count (NL-LEARN-API-PLAN — bounded payload + badge counter).
+export interface NotificationsListResponse {
+  items: NotificationSummary[]
+  unread_count: number
 }
 
 export interface NotificationPreferences {

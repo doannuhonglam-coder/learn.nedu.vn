@@ -66,7 +66,19 @@ async function executeFetch<T>(
 
   if (response.status === 204) return undefined as T
 
-  return response.json() as Promise<T>
+  // BE nedu-backend wraps mọi response trong `{data: T}` qua TransformInterceptor.
+  // MSW mock handlers trả plain T (legacy). Unwrap khi có `data` field ở top
+  // level — preserve mock behavior (T không có `data` key thì pass-through).
+  const json: unknown = await response.json()
+  if (
+    json !== null &&
+    typeof json === 'object' &&
+    'data' in json &&
+    Object.keys(json).length === 1
+  ) {
+    return (json as { data: T }).data
+  }
+  return json as T
 }
 
 function forceLogout(): void {
