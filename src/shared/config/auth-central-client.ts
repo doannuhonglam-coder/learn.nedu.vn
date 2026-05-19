@@ -1,13 +1,17 @@
 // auth-central direct client (L1 D1 — FE login direct, KHÔNG qua nedu-backend).
 //
-// Endpoints map (per NL-LEARN-API-PLAN-001 §Track-A Auth):
-//   POST  /auth/login                  email + password → { tokens, user }
+// Endpoints map (Phase 1 — Google OAuth only, KHÔNG password):
+//   GET   /auth/oauth/google           start flow (redirect tới Google)
+//   GET   /auth/oauth/google/callback  exchange code → redirect về return_to
+//                                      với URL fragment #access_token=...&refresh_token=...
 //   POST  /auth/refresh                rotate refresh token (dedupe singleton)
 //   POST  /auth/logout                 revoke refresh family (Bearer)
-//   GET   /auth/me                     current user (Bearer)
-//   POST  /auth/invite/accept          activation: token + password → { tokens, user, auto-login }
-//   POST  /auth/password/forgot        send reset email
-//   POST  /auth/password/reset         consume reset token
+//   GET   /auth/me                     current user (Bearer) — fetch sau callback
+//
+// KHÔNG còn: /auth/login (password), /auth/invite/accept, /auth/password/*.
+// Onboarding học viên: nedu.vn purchase → person + identity(email) tạo trước
+// → lần Google login đầu link auth_methods(google) vào identity (Path 2 trong
+// auth-central /auth/oauth/google/callback).
 
 import { env } from './env'
 
@@ -28,7 +32,6 @@ export interface AuthTokens {
   token_type: 'Bearer'
 }
 
-export type LoginResult = AuthTokens & { user: AuthUser }
 export type RefreshResult = AuthTokens
 
 export interface AuthCentralError {
@@ -77,12 +80,16 @@ async function doRefresh(refreshToken: string): Promise<RefreshResult> {
 
 // ── Public API ─────────────────────────────────────────────────
 export const authCentralClient = {
-  /** Email + password login → tokens + user. */
-  login: (email: string, password: string) =>
-    request<LoginResult>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+  /**
+   * Build URL để redirect học viên tới auth-central Google flow.
+   * Auth-central sẽ redirect tiếp sang Google, sau callback redirect về
+   * `returnTo#access_token=...&refresh_token=...&token_type=Bearer`.
+   *
+   * `returnTo` phải nằm trong `ALLOWED_RETURN_ORIGINS` ở auth-central env
+   * (local dev: ALLOWED_RETURN_ORIGINS=...,http://localhost:5173).
+   */
+  googleLoginUrl: (returnTo: string): string =>
+    `${BASE_URL}/auth/oauth/google?return_to=${encodeURIComponent(returnTo)}`,
 
   /**
    * Rotate refresh token. Dedupe singleton — multiple concurrent callers
@@ -120,30 +127,5 @@ export const authCentralClient = {
     request<AuthUser & { methods: string[] }>('/auth/me', {
       method: 'GET',
       headers: { Authorization: `Bearer ${accessToken}` },
-    }),
-
-  /**
-   * Activation: học viên click email link → POST với token + password.
-   * Auth-central tạo password method + auto-login → return tokens + user.
-   * (Endpoint thật trên auth-central là /auth/invite/accept.)
-   */
-  activate: (token: string, password: string) =>
-    request<LoginResult>('/auth/invite/accept', {
-      method: 'POST',
-      body: JSON.stringify({ token, password }),
-    }),
-
-  /** Send password reset email. Always returns 200 (không reveal email tồn tại). */
-  forgotPassword: (email: string) =>
-    request<{ message: string }>('/auth/password/forgot', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    }),
-
-  /** Consume reset token → set new password. */
-  resetPassword: (token: string, password: string) =>
-    request<{ message: string }>('/auth/password/reset', {
-      method: 'POST',
-      body: JSON.stringify({ token, password }),
     }),
 }
