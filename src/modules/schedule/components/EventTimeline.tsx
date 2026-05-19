@@ -9,6 +9,35 @@ interface EventTimelineProps {
   onSelectEvent: (event: ScheduleEvent) => void
 }
 
+function formatDay(iso: string): string {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/**
+ * Context line dưới title — khác nhau theo schedule_pattern:
+ *   - continuous: "Khoá liên tục DD/MM → DD/MM" (retreat / intensive)
+ *   - discrete:   "Còn N buổi · Kết thúc DD/MM" (cohort weekly)
+ *   - last session: "Buổi cuối cùng"
+ *
+ * Parity với UpcomingEventsList ở /home — học viên nhận diện rapport ngay
+ * khi nhảy qua-lại 2 page (Apple Consistency).
+ */
+function contextLine(event: ScheduleEvent): string {
+  if (event.schedule_pattern === 'continuous') {
+    const startStr = event.run_start_date ? formatDay(event.run_start_date) : null
+    const endStr = event.run_end_date ? formatDay(event.run_end_date) : null
+    if (startStr && endStr) return `Khoá liên tục ${startStr} → ${endStr}`
+    return `${event.sessions_total} buổi liên tiếp`
+  }
+  const remaining = event.sessions_total - event.session_number
+  if (remaining <= 0) return 'Buổi cuối cùng'
+  const endStr = event.run_end_date ? formatDay(event.run_end_date) : null
+  return endStr
+    ? `Còn ${remaining} buổi · Kết thúc ${endStr}`
+    : `Còn ${remaining} buổi`
+}
+
 export function EventTimeline({
   events,
   year,
@@ -83,6 +112,20 @@ export function EventTimeline({
 
             {/* Content */}
             <div className="flex-1 min-w-0">
+              {/* Course + session pill (Buổi N/Total) — parity với /home */}
+              {event.course_name && (
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-semibold text-i2 truncate">
+                    {event.course_name}
+                  </span>
+                  <span
+                    className="text-[9px] font-semibold px-1.5 py-[1px] rounded flex-shrink-0"
+                    style={{ background: '#FEF4D6', color: '#8B5A15' }}
+                  >
+                    Buổi {event.session_number}/{event.sessions_total}
+                  </span>
+                </div>
+              )}
               <div className="text-[13px] font-semibold text-ink truncate leading-tight">
                 {event.title}
               </div>
@@ -98,6 +141,9 @@ export function EventTimeline({
                 }}
               >
                 {info.subtitle(event)}
+              </div>
+              <div className="text-[10px] text-i3 italic truncate mt-0.5">
+                {contextLine(event)}
               </div>
             </div>
 

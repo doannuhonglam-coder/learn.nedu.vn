@@ -1,7 +1,8 @@
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { Button } from '../../../shared/components/ui/Button'
-import { toast } from '../../../shared/components/ui/Toast'
 import type { MetaphysicalProfile } from '../../../shared/types'
+import { PiiCollectionForm } from './PiiCollectionForm'
+import { PrintableProfile } from './PrintableProfile'
 
 interface MetaphysicalModalProps {
   open: boolean
@@ -11,20 +12,43 @@ interface MetaphysicalModalProps {
   studentCode: string | null
 }
 
-// 5 vault facets — high-level metadata cho list view. Detail rendering
-// (BaZi pillars, Tử Vi mệnh disc, ...) defer pdf download — vault output
-// shape rich + system-specific, FE không inline render trong modal.
+// 5 vault facets canonical keys (snake_case VN) — match BE shape.
 const FACET_META: Array<{
-  key: keyof MetaphysicalProfile['facets']
+  key: 'bat_tu' | 'cuu_tinh' | 'tu_vi' | 'than_so_hoc' | 'cung_hoang_dao'
   icon: string
   title: string
   description: string
 }> = [
-  { key: 'bazi', icon: '🀄', title: 'BaZi · Tứ Trụ', description: 'Ngũ hành ngày sinh, tứ trụ bát tự' },
-  { key: 'nine_star_ki', icon: '⭐', title: 'Nine Star Ki', description: 'Cửu tinh năng lượng cá nhân' },
-  { key: 'tu_vi', icon: '🌙', title: 'Tử Vi', description: 'Đẩu số cung Mệnh + Thân' },
-  { key: 'numerology', icon: '🔢', title: 'Numerology', description: 'Con số chủ đạo (Life Path / Expression)' },
-  { key: 'western_astrology', icon: '♈', title: 'Cung Hoàng Đạo', description: 'Mặt trời / mặt trăng / rising' },
+  {
+    key: 'bat_tu',
+    icon: '🀄',
+    title: 'BaZi · Tứ Trụ',
+    description: 'Ngũ hành ngày sinh, tứ trụ bát tự',
+  },
+  {
+    key: 'cuu_tinh',
+    icon: '⭐',
+    title: 'Nine Star Ki · Cửu Tinh',
+    description: 'Cửu tinh năng lượng cá nhân',
+  },
+  {
+    key: 'tu_vi',
+    icon: '🌙',
+    title: 'Tử Vi · Mệnh Cục',
+    description: 'Đẩu số cung Mệnh + Thân',
+  },
+  {
+    key: 'than_so_hoc',
+    icon: '🔢',
+    title: 'Thần Số Học · Numerology',
+    description: 'Con số chủ đạo (Life Path)',
+  },
+  {
+    key: 'cung_hoang_dao',
+    icon: '♈',
+    title: 'Cung Hoàng Đạo · Astrology',
+    description: 'Mặt trời / mặt trăng / rising',
+  },
 ]
 
 export function MetaphysicalModal({
@@ -34,7 +58,7 @@ export function MetaphysicalModal({
   studentName,
   studentCode,
 }: MetaphysicalModalProps) {
-  // Trường hợp 1: chưa load xong
+  // State 1: chưa load xong
   if (!profile) {
     return (
       <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
@@ -46,7 +70,16 @@ export function MetaphysicalModal({
     )
   }
 
-  // Trường hợp 2: chưa có data (background job chưa populate)
+  // State 2: chưa nhập PII → show wizard
+  if (profile.is_pii_missing) {
+    return (
+      <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
+        <PiiCollectionForm onDone={() => { /* keep modal open to show results */ }} />
+      </BottomSheet>
+    )
+  }
+
+  // State 3: có PII nhưng compute pending (vault down hoặc đang chạy)
   if (!profile.is_available) {
     return (
       <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
@@ -54,16 +87,24 @@ export function MetaphysicalModal({
           <p className="text-4xl mb-3">🌿</p>
           <p className="text-sm text-gray-500">Đang phân tích hồ sơ siêu hình…</p>
           <p className="text-xs text-gray-400 mt-1">
-            Nedu Team sẽ hoàn thiện trong vài ngày tới. Liên hệ nếu cần gấp.
+            Hệ thống đang xử lý. Đóng modal và mở lại sau ít phút.
           </p>
         </div>
       </BottomSheet>
     )
   }
 
-  const handleDownloadPdf = () => {
-    toast('Tính năng PDF sắp ra mắt', 'success')
-  }
+  // State 4: có data → render
+  const summary = profile.facets.summary as
+    | {
+        core_personality?: string
+        communication_dos?: string[]
+        communication_donts?: string[]
+        real_need?: string
+        timing_2026?: string
+        opening_suggestion?: string
+      }
+    | null
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
@@ -73,7 +114,7 @@ export function MetaphysicalModal({
           <span className="text-2xl">🌿</span>
           <div>
             <p className="text-sm font-semibold text-brand-dark">{studentName}</p>
-            <p className="text-xs text-gray-500">{studentCode}</p>
+            {studentCode && <p className="text-xs text-gray-500">{studentCode}</p>}
             <p className="text-[11px] text-gray-400">
               Phân tích 5 hệ thống · cập nhật{' '}
               {profile.cached_at
@@ -83,6 +124,27 @@ export function MetaphysicalModal({
             </p>
           </div>
         </div>
+
+        {/* Core personality summary (vault payload extra context) */}
+        {summary?.core_personality && (
+          <div
+            className="rounded-xl p-4"
+            style={{
+              background: '#FEF4D6',
+              border: '1px solid rgba(245,183,49,0.25)',
+            }}
+          >
+            <p
+              className="font-mono text-[10px] font-bold uppercase mb-2"
+              style={{ color: '#8B5A15', letterSpacing: '0.06em' }}
+            >
+              Đặc tính cốt lõi
+            </p>
+            <p className="text-[13px] text-i2 leading-relaxed whitespace-pre-line">
+              {summary.core_personality}
+            </p>
+          </div>
+        )}
 
         {/* Facets — high-level badge per system */}
         <div className="space-y-2">
@@ -108,23 +170,76 @@ export function MetaphysicalModal({
                     <span className="text-[11px] text-gray-400">đang phân tích</span>
                   )}
                 </div>
+                {available && facet && (
+                  <div className="text-[12px] text-i3 mt-2 ml-7 space-y-0.5">
+                    {Object.entries(facet)
+                      .filter(([k]) => k !== 'label')
+                      .map(([k, v]) => (
+                        <div key={k}>
+                          <span className="text-i3">{k}:</span>{' '}
+                          <span className="text-ink font-medium">{String(v)}</span>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="text-xs font-medium text-amber-700 mb-1">💡 Mẹo</p>
-          <p className="text-sm text-amber-900 leading-relaxed">
-            Chi tiết từng hệ thống sẽ có trong file PDF. Liên hệ Nedu Team
-            nếu cần đọc kỹ hoặc tư vấn lộ trình.
-          </p>
-        </div>
+        {/* Communication tips từ summary */}
+        {summary?.communication_dos && summary.communication_dos.length > 0 && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+            <p className="text-xs font-semibold text-emerald-700 mb-2">
+              ✓ Nên giao tiếp
+            </p>
+            <ul className="text-[13px] text-emerald-900 space-y-1">
+              {summary.communication_dos.map((item, i) => (
+                <li key={i} className="leading-relaxed">
+                  • {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-        <Button className="w-full" onClick={handleDownloadPdf}>
-          Tải Hồ Sơ PDF ↓
+        {summary?.communication_donts && summary.communication_donts.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-xs font-semibold text-red-700 mb-2">
+              ✗ Tránh
+            </p>
+            <ul className="text-[13px] text-red-900 space-y-1">
+              {summary.communication_donts.map((item, i) => (
+                <li key={i} className="leading-relaxed">
+                  • {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Save as PDF — open native print dialog (works on iOS Safari "Save to Files",
+            Android Chrome "Save as PDF", desktop browsers "Microsoft Print to PDF" / etc).
+            PrintableProfile sibling element được render bên dưới, hidden khỏi normal view
+            nhưng show khi browser enter print media query. */}
+        <Button
+          className="w-full"
+          onClick={() => window.print()}
+        >
+          🖨️ Tải Hồ Sơ PDF
         </Button>
+        <p className="text-[10px] text-i3 text-center mt-1.5">
+          Mở hộp thoại in · chọn <strong>"Lưu thành PDF"</strong>
+        </p>
       </div>
+
+      {/* Printable view — hidden trong normal render, visible only @media print.
+          Render outside scroll container để window.print() bắt đúng full layout. */}
+      <PrintableProfile
+        profile={profile}
+        studentName={studentName}
+        studentCode={studentCode}
+      />
     </BottomSheet>
   )
 }

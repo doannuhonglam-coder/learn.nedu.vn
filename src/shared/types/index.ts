@@ -49,14 +49,21 @@ export interface ContinueLearning {
 // ── Course ───────────────────────────────────────────────────
 export type CourseType = 'retreat' | 'cohort' | 'on_demand' | 'coaching'
 
+// CourseSummary = 1 row trong list /api/learn/courses — flat shape match BE.
+// `id` = course_run_id (sellable instance, K13 vs K14). `enrollment_id` riêng
+// để FE thao tác progress/submit. BE Phase 1 trả `instructor_name` + `thumbnail_url`
+// null (defer follow-up).
 export interface CourseSummary {
   id: string
+  enrollment_id: string
   name: string
   slug: string
   course_type: CourseType
   status: 'draft' | 'published' | 'archived'
-  instructor_name: string
+  instructor_name: string | null
   thumbnail_url: string | null
+  description: string | null
+  progress_percent: number
   retreat_date: string | null
   retreat_end_date?: string | null
   retreat_countdown_seconds: number | null
@@ -142,22 +149,9 @@ export interface LessonProgressResponse {
 }
 
 // ── Enrollment ───────────────────────────────────────────────
-export interface EnrollmentSummary {
-  id: string
-  course: CourseSummary
-  status: 'active' | 'completed' | 'expired' | 'cancelled'
-  progress_percent: number
-  enrolled_at: string
-  expired_at: string | null
-}
-
-export interface EnrollmentDetail extends EnrollmentSummary {
-  modules_completed: number
-  modules_total: number
-  lessons_completed: number
-  lessons_total: number
-  certificates: CertificateSummary[]
-}
+// Note: enrollment-level data đã merge vào CourseSummary (enrollment_id +
+// progress_percent flat). BE Phase 1 không expose enrollment_status separately
+// — FE derive completed = progress_percent === 100 nếu cần.
 
 // ── Payment / installment ────────────────────────────────────
 // Removed: Nedu đã bỏ trả góp (A8 payment bridge dropped). FE không còn
@@ -174,17 +168,29 @@ export interface UpcomingEventSummary {
   end_time: string
   platform: string | null
   location: string | null
+  // Course context — render "Khoá {course_name} · Buổi N/Total"
+  course_name: string
+  session_number: number
+  sessions_total: number
+  // 'continuous' = lịch dày, vd retreat 5-10 = 6 buổi liên tiếp
+  // 'discrete' = lịch thưa, vd cohort weekly = 3 buổi 15/2 + 16/2 + 21/2
+  schedule_pattern: 'continuous' | 'discrete'
+  run_start_date: string | null
+  run_end_date: string | null
 }
 
 export interface ScheduleEvent extends UpcomingEventSummary {
   course_id: string
   course_name: string
-  instructor_name: string
+  // instructor_name nullable Phase 1 — BE chưa resolve courses.metadata.instructor_ids.
+  // FE phải handle null gracefully (show "Giảng viên Nedu" fallback).
+  instructor_name: string | null
   description: string | null
   meeting_url: string | null
   is_joinable: boolean
   join_available_in_seconds: number | null
-  ical_url: string
+  // ical_url defer — BE Phase 2 generate /schedule/events/:id/ical endpoint.
+  ical_url: string | null
   module_title?: string | null
   agenda?: string[]
   prep_items?: string[]
@@ -345,31 +351,68 @@ export interface PushSubscriptionInfo {
 // 5-system vault facets cache passthrough — match BE
 // /api/learn/profile/metaphysical contract. Mỗi facet là opaque
 // Record vì vault output shape rich + system-specific (BaZi pillars,
-// Tử Vi mệnh disc, etc.) — FE chỉ render high-level "available" indicator
-// + defer detail to PDF download.
+// Tử Vi mệnh disc, etc.).
 //
-// Note: drop MBTI + Enneagram (không phải vault 5-system). Add Tử Vi +
-// Western Astrology (cung hoàng đạo) thay thế.
+// Canonical 5-system keys (snake_case VN — đồng bộ vault output):
+//   bat_tu (BaZi · Tứ Trụ)
+//   cuu_tinh (Nine Star Ki · Cửu Tinh)
+//   cung_hoang_dao (Western Astrology · Cung Hoàng Đạo)
+//   than_so_hoc (Numerology · Thần Số Học)
+//   tu_vi (Tử Vi · Mệnh Cục)
+//
+// `summary` chứa context fields phụ (core_personality, communication_dos,
+// timing_2026, ...) — Phase 1 reuse vault facet `nedu:sales_lead`. Phase 2
+// vault thêm `nedu:student` facet riêng → drop summary.
 export interface MetaphysicalProfile {
   user_id: string
   facets: {
-    bazi: Record<string, unknown> | null
-    nine_star_ki: Record<string, unknown> | null
+    bat_tu: Record<string, unknown> | null
+    cuu_tinh: Record<string, unknown> | null
+    cung_hoang_dao: Record<string, unknown> | null
+    than_so_hoc: Record<string, unknown> | null
     tu_vi: Record<string, unknown> | null
-    numerology: Record<string, unknown> | null
-    western_astrology: Record<string, unknown> | null
+    summary: Record<string, unknown> | null
   }
   cached_at: string | null
   is_stale: boolean
   is_available: boolean
+  /** True nếu chưa có pii_snapshot → FE show wizard collect dob/tob/pob/gender. */
+  is_pii_missing: boolean
 }
 
-// ── Streak ───────────────────────────────────────────────────
-export interface StreakStats {
-  current_streak_weeks: number
-  longest_streak_weeks: number
-  total_lessons_completed: number
-  last_activity_at: string | null
+/** Input cho PUT /api/learn/profile/pii wizard. */
+export interface PiiInput {
+  dob: string // 'YYYY-MM-DD'
+  tob?: string | null // 'HH:MM' optional
+  pob?: string | null
+  timezone?: string | null
+  gender: 'male' | 'female'
+  birth_lat?: number | null
+  birth_lng?: number | null
+}
+
+// StreakStats type removed — fields merged into LearnMeLearnerState (BE /me).
+
+// ── Me (GET /api/learn/me) ───────────────────────────────────
+// LearnerState là sidecar 1:1 với users (M01). `learner_state` null khi user
+// chưa hydrate learn-specific data (chưa enroll khoá nào hoặc backfill chưa chạy).
+export interface LearnMeLearnerState {
+  student_code: string | null
+  consultant_name: string | null
+  activated_at: string | null
+  streak_current_weeks: number
+  streak_longest_weeks: number
+  last_lesson_completed_at: string | null
+  noi_status: string | null
+}
+
+export interface LearnMeResponse {
+  user_id: string
+  email: string
+  full_name: string
+  avatar_url: string | null
+  roles: string[]
+  learner_state: LearnMeLearnerState | null
 }
 
 // ── Notification ─────────────────────────────────────────────
@@ -382,6 +425,12 @@ export interface NotificationSummary {
   created_at: string
   is_read: boolean
   action_url: string | null
+}
+
+// BE wrap items + unread_count (NL-LEARN-API-PLAN — bounded payload + badge counter).
+export interface NotificationsListResponse {
+  items: NotificationSummary[]
+  unread_count: number
 }
 
 export interface NotificationPreferences {

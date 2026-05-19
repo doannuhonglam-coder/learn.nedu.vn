@@ -4,7 +4,6 @@ import { Spinner } from '../../../shared/components/ui/Spinner'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { toast } from '../../../shared/components/ui/Toast'
 import { useCourseDetail, useCourseLessons, useLessonDetail } from '../hooks/useCourseDetail'
-import { useEnrollments } from '../hooks/useCourses'
 import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { AssignmentCard } from '../../assignments/components/AssignmentCard'
 import { SubmitModal } from '../../assignments/components/SubmitModal'
@@ -17,29 +16,29 @@ import { OverviewTab } from './OverviewTab'
 import type { CourseMaterial, AssignmentDetail } from '../../../shared/types'
 
 interface CourseModalProps {
-  courseId: string | null
+  runId: string | null
   initialTab?: string
   onClose: () => void
 }
 
-export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps) {
-  const { data: course, isLoading } = useCourseDetail(courseId)
-  const { data: lessons } = useCourseLessons(courseId)
-  const { data: enrollments } = useEnrollments()
-  const enrollment = enrollments?.find((e) => e.course.id === courseId)
-  const progressPercent = enrollment?.progress_percent ?? 0
+export function CourseModal({ runId, initialTab, onClose }: CourseModalProps) {
+  const { data: course, isLoading } = useCourseDetail(runId)
+  const { data: lessons } = useCourseLessons(runId)
+  // Detail endpoint trả CourseDetail extends CourseSummary → progress_percent
+  // flat trên course object (recomputed từ modules tree, chính xác hơn list).
+  const progressPercent = course?.progress_percent ?? 0
   const { data: allAssignments } = useAssignments()
   const [activeTab, setActiveTab] = useState(initialTab || 'overview')
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDetail | null>(null)
   const { data: lessonDetail } = useLessonDetail(selectedLessonId)
 
-  if (!courseId) return null
+  if (!runId) return null
 
   const tabs = getTabs(course?.course_type)
 
   return (
-    <BottomSheet open={!!courseId} onClose={onClose} title={course?.name}>
+    <BottomSheet open={!!runId} onClose={onClose} title={course?.name}>
       {isLoading || !course ? (
         <div className="flex justify-center py-12"><Spinner /></div>
       ) : (
@@ -109,10 +108,10 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
 
           {activeTab === 'assignments' && (
             <div className="space-y-3">
-              {(allAssignments || []).filter((a) => a.course_id === courseId).length === 0 ? (
+              {(allAssignments || []).filter((a) => a.course_id === runId).length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-8">Không có bài tập cho khoá này</p>
               ) : (
-                (allAssignments || []).filter((a) => a.course_id === courseId).map((a) => (
+                (allAssignments || []).filter((a) => a.course_id === runId).map((a) => (
                   <AssignmentCard key={a.id} assignment={a} onSelect={setSelectedAssignment} />
                 ))
               )}
@@ -167,7 +166,7 @@ export function CourseModal({ courseId, initialTab, onClose }: CourseModalProps)
             </div>
           )}
 
-          {activeTab === 'book' && <CoachingBookTab instructorName={course.instructor_name} />}
+          {activeTab === 'book' && <CoachingBookTab instructorName={course.instructor_name ?? 'instructor'} />}
         </div>
       )}
     </BottomSheet>

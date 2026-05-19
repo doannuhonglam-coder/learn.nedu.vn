@@ -334,39 +334,41 @@ export function OverviewTab({
         </div>
       )}
 
-      {/* 5. INSTRUCTOR + PROGRAM */}
-      <div>
-        <div
-          className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
-          style={{ letterSpacing: '0.06em' }}
-        >
-          Người dẫn đường
-        </div>
-        <div
-          className="bg-surface rounded-[14px] px-4 py-3 flex items-center gap-3"
-          style={{ border: '1px solid rgba(26,24,22,0.10)' }}
-        >
+      {/* 5. INSTRUCTOR + PROGRAM — Phase 1 BE chưa expose instructor_name, ẩn block khi null. */}
+      {course.instructor_name && (
+        <div>
           <div
-            className="w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-bold flex-shrink-0 text-white"
-            style={{ background: 'linear-gradient(135deg, #F5B731, #D4920A)' }}
+            className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
+            style={{ letterSpacing: '0.06em' }}
           >
-            {course.instructor_name
-              .split(' ')
-              .map((w) => w[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()}
+            Người dẫn đường
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[14px] font-semibold text-ink">
-              {course.instructor_name}
+          <div
+            className="bg-surface rounded-[14px] px-4 py-3 flex items-center gap-3"
+            style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+          >
+            <div
+              className="w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-bold flex-shrink-0 text-white"
+              style={{ background: 'linear-gradient(135deg, #F5B731, #D4920A)' }}
+            >
+              {course.instructor_name
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
             </div>
-            <div className="text-[11px] text-i3 mt-0.5">
-              {course.program ? course.program.name : 'Người dẫn đường · Nedu Education'}
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-semibold text-ink">
+                {course.instructor_name}
+              </div>
+              <div className="text-[11px] text-i3 mt-0.5">
+                {course.program ? course.program.name : 'Người dẫn đường · N-Education'}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 6. CERTIFICATE */}
       <div>

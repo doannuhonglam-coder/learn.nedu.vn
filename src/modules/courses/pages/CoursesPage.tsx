@@ -1,50 +1,54 @@
 import { useState, useMemo } from 'react'
 import { Spinner } from '../../../shared/components/ui/Spinner'
-import { useEnrollments } from '../hooks/useCourses'
+import { useCourses } from '../hooks/useCourses'
 import { CourseFilterTabs, type FilterKey } from '../components/CourseFilterTabs'
 import { CourseCard } from '../components/CourseCard'
 import { CourseModal } from '../components/CourseModal'
 
 export default function CoursesPage() {
-  const { data: enrollments, isLoading } = useEnrollments()
+  const { data: courses, isLoading } = useCourses()
   const [filter, setFilter] = useState<FilterKey>('all')
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const [initialTab, setInitialTab] = useState<string | undefined>()
 
+  // BE list trả cả active + completed (filter pending/cancelled). FE derive
+  // completed = progress_percent === 100.
   const counts = useMemo(() => {
-    if (!enrollments) return { all: 0, active: 0, on_demand: 0, completed: 0 }
+    if (!courses) return { all: 0, active: 0, on_demand: 0, completed: 0 }
     return {
-      all: enrollments.length,
-      active: enrollments.filter((e) => e.status === 'active').length,
-      on_demand: enrollments.filter((e) => e.course.course_type === 'on_demand').length,
-      completed: enrollments.filter((e) => e.status === 'completed').length,
+      all: courses.length,
+      active: courses.filter((c) => c.progress_percent < 100).length,
+      on_demand: courses.filter((c) => c.course_type === 'on_demand').length,
+      completed: courses.filter((c) => c.progress_percent >= 100).length,
     }
-  }, [enrollments])
+  }, [courses])
 
   const filtered = useMemo(() => {
-    if (!enrollments) return []
-    let result = [...enrollments]
+    if (!courses) return []
+    let result = [...courses]
     switch (filter) {
       case 'active':
-        result = result.filter((e) => e.status === 'active')
+        result = result.filter((c) => c.progress_percent < 100)
         break
       case 'on_demand':
-        result = result.filter((e) => e.course.course_type === 'on_demand')
+        result = result.filter((c) => c.course_type === 'on_demand')
         break
       case 'completed':
-        result = result.filter((e) => e.status === 'completed')
+        result = result.filter((c) => c.progress_percent >= 100)
         break
     }
-    // Sort: active first, completed last
+    // Active (incomplete) first, completed last. BE đã pre-sort theo activated_at.
     return result.sort((a, b) => {
-      if (a.status === 'active' && b.status !== 'active') return -1
-      if (a.status !== 'active' && b.status === 'active') return 1
+      const aDone = a.progress_percent >= 100
+      const bDone = b.progress_percent >= 100
+      if (!aDone && bDone) return -1
+      if (aDone && !bDone) return 1
       return 0
     })
-  }, [enrollments, filter])
+  }, [courses, filter])
 
-  const handleOpenCourse = (courseId: string, tab?: string) => {
-    setSelectedCourseId(courseId)
+  const handleOpenCourse = (runId: string, tab?: string) => {
+    setSelectedRunId(runId)
     setInitialTab(tab)
   }
 
@@ -68,10 +72,10 @@ export default function CoursesPage() {
         {filtered.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-8">Không có khoá học nào</p>
         ) : (
-          filtered.map((enrollment) => (
+          filtered.map((course) => (
             <CourseCard
-              key={enrollment.id}
-              enrollment={enrollment}
+              key={course.id}
+              course={course}
               onOpenCourse={handleOpenCourse}
             />
           ))
@@ -79,9 +83,9 @@ export default function CoursesPage() {
       </div>
 
       <CourseModal
-        courseId={selectedCourseId}
+        runId={selectedRunId}
         initialTab={initialTab}
-        onClose={() => { setSelectedCourseId(null); setInitialTab(undefined) }}
+        onClose={() => { setSelectedRunId(null); setInitialTab(undefined) }}
       />
     </div>
   )

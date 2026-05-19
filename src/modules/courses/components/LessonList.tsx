@@ -26,6 +26,17 @@ export function LessonList({ modules, lessons, onSelectLesson }: LessonListProps
   // Assign lessons to modules based on order_index ranges
   const lessonsPerModule = Math.ceil(lessons.length / Math.max(modules.length, 1))
 
+  if (modules.length === 0) {
+    return (
+      <div
+        className="bg-surface rounded-[14px] px-[14px] py-6 text-center text-[12px] text-i3"
+        style={{ border: '1px solid rgba(26,24,22,0.10)' }}
+      >
+        Khoá chưa có bài học nào. Giảng viên sẽ cập nhật sớm.
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-2">
       {modules.map((mod, modIndex) => {

@@ -36,6 +36,13 @@ export default function SchedulePage() {
     setSelectedDay(null)
   }
 
+  const handleJumpToday = () => {
+    const t = new Date()
+    setYear(t.getFullYear())
+    setMonth(t.getMonth())
+    setSelectedDay(null)
+  }
+
   const handleSelectDate = (day: number) => {
     setSelectedDay(selectedDay === day ? null : day)
   }
@@ -65,6 +72,7 @@ export default function SchedulePage() {
         onSelectDate={handleSelectDate}
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
+        onJumpToday={handleJumpToday}
       />
 
       <EventTimeline

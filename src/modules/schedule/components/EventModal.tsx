@@ -11,24 +11,26 @@ function toIcsDate(iso: string) {
 }
 
 function buildGoogleCalendarUrl(event: ScheduleEvent): string {
+  const instructorLabel = event.instructor_name ?? 'Nedu'
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: event.title,
     dates: `${toIcsDate(event.start_time)}/${toIcsDate(event.end_time)}`,
-    details: `${event.course_name} · ${event.instructor_name}${event.description ? '\n\n' + event.description : ''}${event.meeting_url ? '\n\nLink: ' + event.meeting_url : ''}`,
+    details: `${event.course_name} · ${instructorLabel}${event.description ? '\n\n' + event.description : ''}${event.meeting_url ? '\n\nLink: ' + event.meeting_url : ''}`,
     location: event.location || event.platform || '',
   })
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
 function downloadIcs(event: ScheduleEvent) {
+  const instructorLabel = event.instructor_name ?? 'Nedu'
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nedu Learn//VI',
     'BEGIN:VEVENT', `UID:${event.id}@nedu.vn`,
     `DTSTART:${toIcsDate(event.start_time)}`,
     `DTEND:${toIcsDate(event.end_time)}`,
     `SUMMARY:${event.title}`,
-    `DESCRIPTION:${event.course_name} - ${event.instructor_name}`,
+    `DESCRIPTION:${event.course_name} - ${instructorLabel}`,
     event.location ? `LOCATION:${event.location}` : event.platform ? `LOCATION:${event.platform}` : '',
     'END:VEVENT', 'END:VCALENDAR',
   ].filter(Boolean).join('\r\n')
@@ -223,13 +225,13 @@ export function EventModal({ event, onClose }: EventModalProps) {
             </div>
           )}
 
-          {/* Instructor */}
+          {/* Instructor — fallback "Nedu" khi BE chưa resolve courses.metadata.instructor_ids */}
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: '#F5F3EF' }}>
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0 text-white"
               style={{ background: 'linear-gradient(135deg,#F5B731,#D4920A)' }}
             >
-              {event.instructor_name
+              {(event.instructor_name ?? 'Nedu')
                 .split(' ')
                 .map((w) => w[0])
                 .join('')
@@ -238,9 +240,11 @@ export function EventModal({ event, onClose }: EventModalProps) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[13px] font-semibold text-ink truncate">
-                {event.instructor_name}
+                {event.instructor_name ?? 'Giảng viên Nedu'}
               </div>
-              <div className="text-[11px] text-i3">Giảng viên · Nedu</div>
+              <div className="text-[11px] text-i3">
+                {event.instructor_name ? 'Giảng viên · Nedu' : 'Đang cập nhật'}
+              </div>
             </div>
           </div>
         </div>

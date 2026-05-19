@@ -8,6 +8,8 @@ interface CalendarMonthProps {
   onSelectDate: (day: number) => void
   onPrevMonth: () => void
   onNextMonth: () => void
+  /** Apple-style "Hôm nay" quick-jump khi user lội xa tháng hiện tại. */
+  onJumpToday?: () => void
 }
 
 const WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
@@ -26,6 +28,7 @@ export function CalendarMonth({
   onSelectDate,
   onPrevMonth,
   onNextMonth,
+  onJumpToday,
 }: CalendarMonthProps) {
   const firstDay = new Date(year, month, 1)
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -35,13 +38,23 @@ export function CalendarMonth({
   const today = new Date()
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
 
-  const eventsByDay = new Map<number, Set<string>>()
+  // Aggregate event types per day — up to 3 dots stacked.
+  // Order preserved: retreat → online → offline (visual priority).
+  const eventsByDay = new Map<number, string[]>()
+  const seenPerDay = new Map<number, Set<string>>()
   events.forEach((evt) => {
     const d = new Date(evt.start_time)
     if (d.getFullYear() === year && d.getMonth() === month) {
       const day = d.getDate()
-      if (!eventsByDay.has(day)) eventsByDay.set(day, new Set())
-      eventsByDay.get(day)!.add(evt.event_type)
+      if (!seenPerDay.has(day)) {
+        seenPerDay.set(day, new Set())
+        eventsByDay.set(day, [])
+      }
+      const seen = seenPerDay.get(day)!
+      if (!seen.has(evt.event_type) && eventsByDay.get(day)!.length < 3) {
+        seen.add(evt.event_type)
+        eventsByDay.get(day)!.push(evt.event_type)
+      }
     }
   })
 
@@ -67,16 +80,33 @@ export function CalendarMonth({
           onClick={onPrevMonth}
           className="w-8 h-8 rounded-full flex items-center justify-center text-[16px]"
           style={{ background: '#F5F3EF' }}
+          aria-label="Tháng trước"
         >
           ‹
         </button>
-        <h3 className="font-display font-semibold text-[16px] text-ink capitalize">
-          {monthName}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-display font-semibold text-[16px] text-ink capitalize">
+            {monthName}
+          </h3>
+          {!isCurrentMonth && onJumpToday && (
+            <button
+              onClick={onJumpToday}
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors"
+              style={{
+                background: '#FEF4D6',
+                color: '#8B5A15',
+                letterSpacing: '0.03em',
+              }}
+            >
+              Hôm nay
+            </button>
+          )}
+        </div>
         <button
           onClick={onNextMonth}
           className="w-8 h-8 rounded-full flex items-center justify-center text-[16px]"
           style={{ background: '#F5F3EF' }}
+          aria-label="Tháng sau"
         >
           ›
         </button>
@@ -123,15 +153,20 @@ export function CalendarMonth({
               style={{ background: bg, color, fontWeight }}
             >
               {day}
-              {dotTypes && dotTypes.size > 0 && (
-                <span
-                  className="absolute bottom-[3px] w-1 h-1 rounded-full"
-                  style={{
-                    background: isToday
-                      ? '#FFFFFF'
-                      : eventDotColor[Array.from(dotTypes)[0]] || '#D4920A',
-                  }}
-                />
+              {dotTypes && dotTypes.length > 0 && (
+                <span className="absolute bottom-[3px] flex gap-[2px]">
+                  {dotTypes.map((t, i) => (
+                    <span
+                      key={`${day}-${i}`}
+                      className="w-1 h-1 rounded-full"
+                      style={{
+                        background: isToday
+                          ? '#FFFFFF'
+                          : eventDotColor[t] || '#D4920A',
+                      }}
+                    />
+                  ))}
+                </span>
               )}
             </button>
           )

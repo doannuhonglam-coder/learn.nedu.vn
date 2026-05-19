@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Spinner } from '../../../shared/components/ui/Spinner'
-import { useProfile, useMetaphysical, useStreak } from '../hooks/useProfile'
+import { useMetaphysical } from '../hooks/useProfile'
 import { useHomeSummary } from '../../home/hooks/useHomeData'
+import { useMe } from '../../../shared/hooks/useMe'
 import { useAuthStore } from '../../../shared/stores/auth.store'
 import { ProfileHeader } from '../components/ProfileHeader'
 import { NoisCommunitySection } from '../components/NoisCommunitySection'
@@ -13,28 +14,24 @@ import { SettingsModal } from '../components/SettingsModal'
 import { SupportModal } from '../components/SupportModal'
 import { StreakModal } from '../components/StreakModal'
 import { CertificateModal } from '../../certificates/components/CertificateModal'
+import { LogoutConfirmModal } from '../../auth/components/LogoutConfirmModal'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const clearSession = useAuthStore((s) => s.clearSession)
-  const { data: profile, isLoading: profileLoading } = useProfile()
+  // Profile basic = persisted auth store (sync, no spinner). Learner_state
+  // (streak/student_code/consultant) = /me hydration (BE truth).
+  const storedUser = useAuthStore((s) => s.user)
+  const { data: me, isLoading: meLoading } = useMe()
   const { data: metaphysical } = useMetaphysical()
-  const { data: streak } = useStreak()
   const { data: homeSummary } = useHomeSummary()
   const [metaModalOpen, setMetaModalOpen] = useState(false)
   const [certModalOpen, setCertModalOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [supportOpen, setSupportOpen] = useState(false)
   const [streakOpen, setStreakOpen] = useState(false)
+  const [logoutOpen, setLogoutOpen] = useState(false)
 
-  const handleLogout = () => {
-    if (confirm('Đăng xuất?')) {
-      clearSession()
-      navigate('/login', { replace: true })
-    }
-  }
-
-  if (profileLoading || !profile) {
+  if (meLoading || !storedUser) {
     return (
       <div className="flex items-center justify-center py-20">
         <Spinner size="lg" />
@@ -42,7 +39,20 @@ export default function ProfilePage() {
     )
   }
 
-  const streakDays = (streak?.current_streak_weeks || 0) * 7 + 7 // approx
+  // Merge: store có id/person_id/email từ auth-central /auth/me (login time).
+  // /api/learn/me là source-of-truth cho full_name/avatar (auth-central trả
+  // null full_name khi vault canonical + local persons rỗng — workaround sẽ
+  // wire vault PII fetch ở Phase 2). learner_state cũng từ /api/learn/me.
+  const profile = {
+    ...storedUser,
+    full_name: me?.full_name ?? storedUser.full_name,
+    avatar_url: me?.avatar_url ?? storedUser.avatar_url,
+    student_code: me?.learner_state?.student_code ?? storedUser.student_code,
+    consultant_name: me?.learner_state?.consultant_name ?? storedUser.consultant_name,
+    activated_at: me?.learner_state?.activated_at ?? storedUser.activated_at,
+  }
+
+  const streakDays = (me?.learner_state?.streak_current_weeks ?? 0) * 7 + 7 // approx
 
   return (
     <div className="pb-6">
@@ -72,15 +82,15 @@ export default function ProfilePage() {
         onOpenSupport={() => setSupportOpen(true)}
       />
 
-      {/* Logout */}
+      {/* Logout — destructive action, red text + border per Apple/iOS convention */}
       <div className="px-4 mt-5">
         <button
-          onClick={handleLogout}
-          className="w-full py-3.5 rounded-[14px] text-[14px] font-semibold transition-colors"
+          onClick={() => setLogoutOpen(true)}
+          className="w-full py-3.5 rounded-[14px] text-[14px] font-semibold transition-colors hover:bg-red-50"
           style={{
             background: '#FFFFFF',
-            color: '#1A1816',
-            border: '1.5px solid rgba(26,24,22,0.10)',
+            color: '#DC2626',
+            border: '1.5px solid rgba(220,38,38,0.30)',
           }}
         >
           Đăng xuất
@@ -107,6 +117,7 @@ export default function ProfilePage() {
         onClose={() => setStreakOpen(false)}
         currentStreakDays={streakDays}
       />
+      <LogoutConfirmModal open={logoutOpen} onClose={() => setLogoutOpen(false)} />
     </div>
   )
 }

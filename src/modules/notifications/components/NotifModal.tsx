@@ -9,6 +9,30 @@ import { useAuthStore } from '../../../shared/stores/auth.store'
 import { useNavigate } from 'react-router-dom'
 import type { NotificationSummary } from '../../../shared/types'
 
+/**
+ * Format created_at thành relative time gần với cảm nhận người Việt:
+ *   < 1 phút → "Vừa xong"
+ *   < 60 phút → "N phút trước"
+ *   < 24 giờ → "N giờ trước"
+ *   < 7 ngày → "N ngày trước"
+ *   else → DD/MM/YYYY
+ *
+ * Apple Simplicity: 1 dòng dễ scan, không show timestamp đầy đủ trừ khi xa hơn 7 ngày.
+ */
+function formatRelativeTime(iso: string): string {
+  const now = Date.now()
+  const then = new Date(iso).getTime()
+  const diffSec = Math.floor((now - then) / 1000)
+  if (diffSec < 60) return 'Vừa xong'
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin} phút trước`
+  const diffH = Math.floor(diffMin / 60)
+  if (diffH < 24) return `${diffH} giờ trước`
+  const diffD = Math.floor(diffH / 24)
+  if (diffD < 7) return `${diffD} ngày trước`
+  return new Date(iso).toLocaleDateString('vi-VN')
+}
+
 interface NotifModalProps {
   open: boolean
   onClose: () => void
@@ -31,10 +55,14 @@ function getNotifRoute(notif: NotificationSummary): string {
 }
 
 export function NotifModal({ open, onClose }: NotifModalProps) {
-  const { data: notifications, isLoading } = useNotifications()
+  const { data, isLoading } = useNotifications()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setNotifCount = useAuthStore((s) => s.setNotifCount)
+
+  // BE shape `{items, unread_count}` — handle khi query fail (data = undefined).
+  const items = data?.items ?? []
+  const unreadCount = data?.unread_count ?? 0
 
   const markAllMutation = useMutation({
     mutationFn: () => notificationsService.markRead(),
@@ -45,19 +73,52 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
     },
   })
 
+  // Mark single notification as read trước khi navigate.
+  // Optimistic: update cache liền + decrement notifCount để badge fade ngay.
+  const markOneMutation = useMutation({
+    mutationFn: (id: string) => notificationsService.markRead([id]),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications'] })
+      const previous = queryClient.getQueryData<typeof data>(['notifications'])
+      if (previous) {
+        const wasUnread = previous.items.find((i) => i.id === id)?.is_read === false
+        queryClient.setQueryData(['notifications'], {
+          ...previous,
+          items: previous.items.map((i) =>
+            i.id === id ? { ...i, is_read: true } : i,
+          ),
+          unread_count: wasUnread
+            ? Math.max(previous.unread_count - 1, 0)
+            : previous.unread_count,
+        })
+        if (wasUnread) {
+          setNotifCount(Math.max((unreadCount as number) - 1, 0))
+        }
+      }
+      return { previous }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['notifications'], ctx.previous)
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    },
+  })
+
   const handleItemClick = (notif: NotificationSummary) => {
+    if (!notif.is_read) {
+      markOneMutation.mutate(notif.id)
+    }
     const route = getNotifRoute(notif)
     navigate(route)
     onClose()
   }
 
-  const unreadCount = notifications?.filter((n) => !n.is_read).length || 0
-
   return (
     <BottomSheet open={open} onClose={onClose} title="Thông báo">
       {isLoading ? (
         <div className="flex justify-center py-8"><Spinner /></div>
-      ) : !notifications || notifications.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="py-8 text-center text-gray-400 text-sm">
           Không có thông báo mới
         </div>
@@ -76,7 +137,7 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
             </div>
           )}
           <div className="space-y-2">
-            {notifications.map((notif) => (
+            {items.map((notif) => (
               <button
                 key={notif.id}
                 onClick={() => handleItemClick(notif)}
@@ -90,7 +151,7 @@ export function NotifModal({ open, onClose }: NotifModalProps) {
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.body}</p>
                   <p className="text-[10px] text-gray-400 mt-1">
-                    {new Date(notif.created_at).toLocaleDateString('vi-VN')}
+                    {formatRelativeTime(notif.created_at)}
                   </p>
                 </div>
                 {!notif.is_read && (

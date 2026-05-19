@@ -5,6 +5,7 @@ import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { useScheduleEvents } from '../../schedule/hooks/useSchedule'
 import { WelcomeHeader } from '../components/WelcomeHeader'
 import { HeroContinueWidget } from '../components/HeroContinueWidget'
+import { RecentCoursesList } from '../components/RecentCoursesList'
 import { UpcomingEventsList } from '../components/UpcomingEventsList'
 import { AssignmentsList } from '../components/AssignmentsList'
 import { CourseModal } from '../../courses/components/CourseModal'
@@ -66,6 +67,11 @@ export default function HomePage() {
         </div>
       )}
 
+      <RecentCoursesList
+        courses={summary.recent_courses}
+        onOpenCourse={handleOpenCourse}
+      />
+
       <UpcomingEventsList
         events={summary.upcoming_events}
         onOpenEvent={handleOpenEvent}
@@ -77,7 +83,7 @@ export default function HomePage() {
       />
 
       <CourseModal
-        courseId={courseModalId}
+        runId={courseModalId}
         initialTab={courseModalTab}
         onClose={() => { setCourseModalId(null); setCourseModalTab(undefined) }}
       />

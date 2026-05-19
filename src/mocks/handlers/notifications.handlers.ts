@@ -45,7 +45,10 @@ const mockNotifications = [
 
 export const notificationsHandlers = [
   http.get(`*/api/learn/notifications`, () => {
-    return HttpResponse.json(mockNotifications)
+    return HttpResponse.json({
+      items: mockNotifications,
+      unread_count: mockNotifications.filter((n) => !n.is_read).length,
+    })
   }),
 
   http.post(`*/api/learn/notifications/mark-read`, () => {

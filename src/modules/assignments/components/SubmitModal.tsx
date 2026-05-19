@@ -16,12 +16,16 @@ export function SubmitModal({ assignment, onClose }: SubmitModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
+  // BE accept content?, file_url? — at least 1 required. FE gửi đúng trường có:
+  // text-only → content; file-only → file_url; cả 2 → cả 2.
   const submitMutation = useMutation({
-    mutationFn: () =>
-      assignmentsService.submitAssignment(assignment!.id, {
-        content,
+    mutationFn: () => {
+      const trimmed = content.trim()
+      return assignmentsService.submitAssignment(assignment!.id, {
+        content: trimmed.length > 0 ? trimmed : undefined,
         file_url: file ? URL.createObjectURL(file) : undefined,
-      }),
+      })
+    },
     onSuccess: () => {
       toast('Đã nộp bài thành công!', 'success')
       queryClient.invalidateQueries({ queryKey: ['assignments'] })
@@ -33,6 +37,8 @@ export function SubmitModal({ assignment, onClose }: SubmitModalProps) {
       toast('Có lỗi xảy ra, vui lòng thử lại', 'error')
     },
   })
+
+  const canSubmit = content.trim().length > 0 || file !== null
 
   if (!assignment) return null
 
@@ -208,9 +214,10 @@ export function SubmitModal({ assignment, onClose }: SubmitModalProps) {
             {/* CTAs */}
             <button
               onClick={() => submitMutation.mutate()}
-              disabled={!content.trim() || submitMutation.isPending}
+              disabled={!canSubmit || submitMutation.isPending}
               className="w-full py-3.5 rounded-xl text-[14px] font-semibold transition-opacity disabled:opacity-50"
               style={{ background: '#1A1816', color: '#F5B731' }}
+              title={!canSubmit ? 'Cần nhập nội dung hoặc đính kèm file' : undefined}
             >
               {submitMutation.isPending ? 'Đang nộp...' : 'Nộp Bài →'}
             </button>

@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { toast } from '../../../shared/components/ui/Toast'
-import { authService } from '../../auth/services/auth.service'
-import { useAuthStore } from '../../../shared/stores/auth.store'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from '../../notifications/hooks/useNotifications'
+import { useUpdatePersonalInfo } from '../hooks/useProfile'
 import type { StudentProfile } from '../../../shared/types'
 
 interface SettingsModalProps {
@@ -38,11 +37,10 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
-  const updateUser = useAuthStore((s) => s.updateUser)
   const [editMode, setEditMode] = useState(false)
   const [fullName, setFullName] = useState(profile.full_name ?? '')
   const [phone, setPhone] = useState(profile.phone || '')
-  const [changingPassword, setChangingPassword] = useState(false)
+  const updateInfo = useUpdatePersonalInfo()
 
   // Notification preferences từ BE — toggle on/off sync /notifications/preferences.
   // Optimistic update ở mutation hook → toggle phản hồi tức thì.
@@ -60,18 +58,22 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
     }
   }, [open, profile.full_name, profile.phone])
 
-  const handleSaveInfo = () => {
+  const handleSaveInfo = async () => {
     const trimmedName = fullName.trim()
     if (!trimmedName) {
       toast('Họ tên không được trống', 'error')
       return
     }
-    updateUser({
-      full_name: trimmedName,
-      phone: phone.trim() || null,
-    })
-    toast('Đã lưu thông tin', 'success')
-    setEditMode(false)
+    try {
+      await updateInfo.mutateAsync({
+        full_name: trimmedName,
+        phone: phone.trim() || null,
+      })
+      toast('Đã lưu thông tin', 'success')
+      setEditMode(false)
+    } catch {
+      toast('Lưu không được, thử lại sau ít phút', 'error')
+    }
   }
 
   const handleCancelEdit = () => {
@@ -80,17 +82,9 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
     setEditMode(false)
   }
 
-  const handleChangePassword = async () => {
-    setChangingPassword(true)
-    try {
-      await authService.forgotPassword(profile.email)
-      toast('Đã gửi link đổi mật khẩu qua email', 'success')
-    } catch {
-      toast('Có lỗi xảy ra', 'error')
-    } finally {
-      setChangingPassword(false)
-    }
-  }
+  // Password flow đã drop Phase 1 — học viên login bằng Google. Khi cần
+  // "đổi mật khẩu", user thực hiện trực tiếp ở Google Account, không qua
+  // auth-central. Section Bảo mật chỉ hiển thị thông tin static.
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Cài đặt tài khoản">
@@ -115,15 +109,17 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
               <div className="flex gap-2">
                 <button
                   onClick={handleCancelEdit}
-                  className="text-[12px] font-medium text-i3"
+                  disabled={updateInfo.isPending}
+                  className="text-[12px] font-medium text-i3 disabled:opacity-50"
                 >
                   Huỷ
                 </button>
                 <button
                   onClick={handleSaveInfo}
-                  className="text-[12px] font-semibold text-gold-d"
+                  disabled={updateInfo.isPending}
+                  className="text-[12px] font-semibold text-gold-d disabled:opacity-50"
                 >
-                  Lưu
+                  {updateInfo.isPending ? 'Đang lưu…' : 'Lưu'}
                 </button>
               </div>
             )}
@@ -226,7 +222,7 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
           </div>
         </div>
 
-        {/* Security */}
+        {/* Security — Phase 1 login = Google → user đổi password ở Google Account */}
         <div>
           <div
             className="font-mono text-[10px] font-bold uppercase text-i3 mb-2 px-1"
@@ -234,21 +230,22 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
           >
             Bảo mật
           </div>
-          <button
-            onClick={handleChangePassword}
-            disabled={changingPassword}
-            className="w-full bg-surface rounded-[14px] px-4 py-3.5 flex items-center gap-3 text-left transition-colors active:bg-s2 disabled:opacity-60"
+          <a
+            href="https://myaccount.google.com/security"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-surface rounded-[14px] px-4 py-3.5 flex items-center gap-3 text-left transition-colors active:bg-s2"
             style={{ border: '1px solid rgba(26,24,22,0.10)' }}
           >
             <div className="text-[18px] flex-shrink-0">🔒</div>
             <div className="flex-1 min-w-0">
-              <div className="text-[14px] font-medium text-ink">Đổi mật khẩu</div>
+              <div className="text-[14px] font-medium text-ink">Quản lý tài khoản Google</div>
               <div className="text-[11px] text-i3 mt-0.5">
-                {changingPassword ? 'Đang gửi...' : 'Gửi link đổi qua email'}
+                Đổi mật khẩu + 2FA tại Google Account
               </div>
             </div>
-            <span className="text-i3 text-[14px]">›</span>
-          </button>
+            <span className="text-i3 text-[14px]">↗</span>
+          </a>
         </div>
 
         {/* Language */}

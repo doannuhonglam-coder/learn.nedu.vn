@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 import type { StudentProfile } from '../../../shared/types'
 import { toast } from '../../../shared/components/ui/Toast'
-import { useAuthStore } from '../../../shared/stores/auth.store'
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
+import { useSetAvatar, useClearAvatar } from '../hooks/useProfile'
 
 interface ProfileHeaderProps {
   profile: StudentProfile
@@ -11,7 +11,19 @@ interface ProfileHeaderProps {
   onCertificatesClick: () => void
 }
 
-const MAX_AVATAR_BYTES = 5 * 1024 * 1024 // 5MB
+// BE limit: 800KB raw (Fastify body 1MB ceiling - JSON wrap overhead).
+// Pre-check ở FE → tránh upload thừa rồi BE reject 413/422.
+const MAX_AVATAR_BYTES = 800 * 1024 // 800KB — match BE limit
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp']
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error('file_read_error'))
+    reader.readAsDataURL(file)
+  })
+}
 
 export function ProfileHeader({
   profile,
@@ -19,9 +31,10 @@ export function ProfileHeader({
   onCoursesClick,
   onCertificatesClick,
 }: ProfileHeaderProps) {
-  const updateUser = useAuthStore((s) => s.updateUser)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const setAvatar = useSetAvatar()
+  const clearAvatar = useClearAvatar()
 
   const initials = (profile.full_name ?? '')
     .split(' ')
@@ -30,33 +43,45 @@ export function ProfileHeader({
     .slice(0, 2)
     .toUpperCase()
 
+  // Validate + read file → base64 → PUT BE.
+  const uploadFile = async (file: File): Promise<void> => {
+    if (!ALLOWED_MIMES.includes(file.type)) {
+      toast('Chỉ chấp nhận ảnh JPG, PNG, WebP', 'error')
+      return
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast('Ảnh quá lớn (tối đa 1MB)', 'error')
+      return
+    }
+    const dataUrl = await readFileAsDataUrl(file)
+    try {
+      await setAvatar.mutateAsync(dataUrl)
+      toast('📸 Đã cập nhật ảnh đại diện', 'success')
+      setPickerOpen(false)
+    } catch (err: unknown) {
+      const msg =
+        (err as { error?: string; message?: string })?.error ??
+        (err as { message?: string })?.message ??
+        'upload_failed'
+      toast(`Tải ảnh lỗi: ${msg}`, 'error')
+    }
+  }
+
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = '' // reset so picking same file again still fires onChange
     if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      toast('Vui lòng chọn file ảnh', 'error')
-      return
-    }
-    if (file.size > MAX_AVATAR_BYTES) {
-      toast('Ảnh quá lớn (tối đa 5MB)', 'error')
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      const dataUrl = reader.result as string
-      updateUser({ avatar_url: dataUrl })
-      toast('📸 Đã cập nhật ảnh đại diện', 'success')
-    }
-    reader.readAsDataURL(file)
+    void uploadFile(file)
   }
 
-  const handleRemoveAvatar = () => {
-    updateUser({ avatar_url: null })
-    toast('Đã xoá ảnh đại diện', 'success')
-    setPickerOpen(false)
+  const handleRemoveAvatar = async () => {
+    try {
+      await clearAvatar.mutateAsync()
+      toast('Đã xoá ảnh đại diện', 'success')
+      setPickerOpen(false)
+    } catch {
+      toast('Có lỗi khi xoá ảnh', 'error')
+    }
   }
 
   return (
@@ -94,7 +119,7 @@ export function ProfileHeader({
           {profile.full_name}
         </div>
         <div className="text-[12px] text-i3 mb-4">
-          Học viên · Nedu Education
+          Học viên · N-Education
           {profile.student_code ? ` · ID: ${profile.student_code}` : ''}
         </div>
 
@@ -189,13 +214,7 @@ export function ProfileHeader({
                 const target = e.target as HTMLInputElement
                 const file = target.files?.[0]
                 if (!file) return
-                const reader = new FileReader()
-                reader.onload = () => {
-                  updateUser({ avatar_url: reader.result as string })
-                  toast('📸 Đã cập nhật ảnh đại diện', 'success')
-                  setPickerOpen(false)
-                }
-                reader.readAsDataURL(file)
+                void uploadFile(file)
               }
               input.click()
             }}
