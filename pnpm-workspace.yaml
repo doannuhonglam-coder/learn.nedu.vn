@@ -1,3 +1,9 @@
+# Single-package repo — `packages: []` required by pnpm 10 schema dù không có
+# workspace nested. Keep file để giữ `allowBuilds` security settings (chặn
+# install scripts native binary cho msw/esbuild/sharp/workerd — dùng prebuilt
+# binaries để CI nhanh + tránh side-effect arbitrary post-install code).
+packages: []
+
 allowBuilds:
   esbuild: false
   msw: false
