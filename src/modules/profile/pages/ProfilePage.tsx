@@ -93,7 +93,7 @@ export default function ProfilePage() {
         open={metaModalOpen}
         onClose={() => setMetaModalOpen(false)}
         profile={metaphysical || null}
-        studentName={profile.full_name}
+        studentName={profile.full_name ?? ''}
         studentCode={profile.student_code}
       />
       <CertificateModal open={certModalOpen} onClose={() => setCertModalOpen(false)} />

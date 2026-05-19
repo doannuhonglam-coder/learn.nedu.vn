@@ -36,7 +36,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
   const updateUser = useAuthStore((s) => s.updateUser)
   const [editMode, setEditMode] = useState(false)
-  const [fullName, setFullName] = useState(profile.full_name)
+  const [fullName, setFullName] = useState(profile.full_name ?? '')
   const [phone, setPhone] = useState(profile.phone || '')
   const [pushOn, setPushOn] = useState(true)
   const [emailOn, setEmailOn] = useState(true)
@@ -46,7 +46,7 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
   useEffect(() => {
     if (open) {
       setEditMode(false)
-      setFullName(profile.full_name)
+      setFullName(profile.full_name ?? '')
       setPhone(profile.phone || '')
     }
   }, [open, profile.full_name, profile.phone])
@@ -66,7 +66,7 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
   }
 
   const handleCancelEdit = () => {
-    setFullName(profile.full_name)
+    setFullName(profile.full_name ?? '')
     setPhone(profile.phone || '')
     setEditMode(false)
   }
@@ -154,7 +154,7 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
               </>
             ) : (
               <>
-                <ReadOnlyRow label="Họ và tên" value={profile.full_name} />
+                <ReadOnlyRow label="Họ và tên" value={profile.full_name ?? ''} />
                 <ReadOnlyRow label="Email" value={profile.email} divider />
                 <ReadOnlyRow
                   label="Điện thoại"

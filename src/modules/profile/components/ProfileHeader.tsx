@@ -23,7 +23,7 @@ export function ProfileHeader({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  const initials = profile.full_name
+  const initials = (profile.full_name ?? '')
     .split(' ')
     .map((w) => w[0])
     .join('')
