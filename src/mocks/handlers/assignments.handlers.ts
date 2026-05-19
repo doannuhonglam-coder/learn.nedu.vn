@@ -1,7 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 const mockAssignments = [
   {
     id: 'asg-001',
@@ -53,17 +51,17 @@ const mockAssignments = [
 ]
 
 export const assignmentsHandlers = [
-  http.get(`${API}/api/v1/assignments`, () => {
+  http.get(`*/api/learn/assignments`, () => {
     return HttpResponse.json(mockAssignments)
   }),
 
-  http.get(`${API}/api/v1/assignments/:id`, ({ params }) => {
+  http.get(`*/api/learn/assignments/:id`, ({ params }) => {
     const assignment = mockAssignments.find((a) => a.id === params.id)
     if (!assignment) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Not found', request_id: 'req-x' }, { status: 404 })
     return HttpResponse.json(assignment)
   }),
 
-  http.post(`${API}/api/v1/assignments/:id/submit`, async ({ request }) => {
+  http.post(`*/api/learn/assignments/:id/submit`, async ({ request }) => {
     const body = await request.json() as { content: string; file_url?: string }
     return HttpResponse.json({
       id: 'sub-new',

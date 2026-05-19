@@ -1,7 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 const mockEvents = [
   {
     id: 'evt-001',
@@ -91,11 +89,11 @@ const mockEvents = [
 ]
 
 export const scheduleHandlers = [
-  http.get(`${API}/api/v1/schedule/events`, () => {
+  http.get(`*/api/learn/schedule/events`, () => {
     return HttpResponse.json(mockEvents)
   }),
 
-  http.get(`${API}/api/v1/schedule/events/:id`, ({ params }) => {
+  http.get(`*/api/learn/schedule/events/:id`, ({ params }) => {
     const event = mockEvents.find((e) => e.id === params.id)
     if (!event) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Not found', request_id: 'req-x' }, { status: 404 })
     return HttpResponse.json(event)

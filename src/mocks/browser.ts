@@ -7,6 +7,9 @@ import { assignmentsHandlers } from './handlers/assignments.handlers'
 import { notificationsHandlers } from './handlers/notifications.handlers'
 import { profileHandlers } from './handlers/profile.handlers'
 import { certificatesHandlers } from './handlers/certificates.handlers'
+import { coachingHandlers } from './handlers/coaching.handlers'
+import { missionsHandlers } from './handlers/missions.handlers'
+import { pushHandlers } from './handlers/push.handlers'
 
 export const worker = setupWorker(
   ...authHandlers,
@@ -17,4 +20,7 @@ export const worker = setupWorker(
   ...notificationsHandlers,
   ...profileHandlers,
   ...certificatesHandlers,
+  ...coachingHandlers,
+  ...missionsHandlers,
+  ...pushHandlers,
 )

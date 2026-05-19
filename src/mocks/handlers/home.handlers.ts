@@ -1,9 +1,7 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 export const homeHandlers = [
-  http.get(`${API}/api/v1/home/summary`, () => {
+  http.get(`*/api/learn/home/summary`, () => {
     return HttpResponse.json({
       student: {
         id: 'stu-001',
@@ -122,7 +120,7 @@ export const homeHandlers = [
     })
   }),
 
-  http.get(`${API}/api/v1/home/continue-learning`, () => {
+  http.get(`*/api/learn/home/continue-learning`, () => {
     return HttpResponse.json({
       enrollment_id: 'enr-001',
       course_id: 'crs-001',

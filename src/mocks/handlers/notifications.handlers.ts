@@ -1,7 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 const mockNotifications = [
   {
     id: 'notif-002',
@@ -46,15 +44,15 @@ const mockNotifications = [
 ]
 
 export const notificationsHandlers = [
-  http.get(`${API}/api/v1/notifications`, () => {
+  http.get(`*/api/learn/notifications`, () => {
     return HttpResponse.json(mockNotifications)
   }),
 
-  http.post(`${API}/api/v1/notifications/mark-read`, () => {
+  http.post(`*/api/learn/notifications/mark-read`, () => {
     return HttpResponse.json({ count: 3 })
   }),
 
-  http.get(`${API}/api/v1/notifications/preferences`, () => {
+  http.get(`*/api/learn/notifications/preferences`, () => {
     return HttpResponse.json({
       push_enabled: true,
       email_enabled: true,
@@ -64,7 +62,7 @@ export const notificationsHandlers = [
     })
   }),
 
-  http.patch(`${API}/api/v1/notifications/preferences`, async ({ request }) => {
+  http.patch(`*/api/learn/notifications/preferences`, async ({ request }) => {
     const body = await request.json()
     return HttpResponse.json(body)
   }),

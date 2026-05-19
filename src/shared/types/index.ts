@@ -239,22 +239,106 @@ export interface CertificateDetail extends CertificateSummary {
 }
 
 // ── Coaching ─────────────────────────────────────────────────
-export interface CoachingSessionSummary {
+// Match BE /api/learn/coaching/sessions DTO.
+export interface CoachingSession {
   id: string
-  session_number: number
+  enrollment_id: string | null
+  course_run_id: string
+  course_id: string
+  course_name: string
+  course_slug: string
+  session_number: number | null
+  sessions_total: number
   title: string
-  scheduled_at: string | null
+  description: string | null
+  scheduled_at: string
+  end_at: string | null
+  duration_minutes: number | null
   status: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
-  coach_name: string
+  is_joinable: boolean
+  meeting_url: string | null
+  meeting_id: string | null
+  meeting_passcode: string | null
+  recording_url: string | null
+  has_notes: boolean
 }
 
-export interface CoachingSessionDetail extends CoachingSessionSummary {
-  enrollment_id: string
+export interface CoachingNote {
+  summary_text: string | null
+  homework_items: string[]
+  written_at: string
+}
+
+export interface CoachingSessionDetail extends CoachingSession {
+  note: CoachingNote | null
+}
+
+// ── Mission (challenge content_kind) ─────────────────────────
+// Match BE /api/learn/missions DTO.
+export type MissionStatus =
+  | 'locked'
+  | 'not_submitted'
+  | 'submitted'
+  | 'reviewed'
+  | 'overdue'
+
+export interface MissionSubmission {
+  id: string
+  content: string
+  file_url: string | null
+  submitted_at: string
+  review_text: string | null
+  rating: number | null
+  reviewed_at: string | null
+}
+
+export interface Mission {
+  id: string
+  course_run_id: string
+  course_id: string
   course_name: string
-  meeting_url: string | null
-  is_joinable: boolean
-  notes: string | null
-  homework: Array<{ title: string; description: string; due_date: string | null }> | null
+  course_slug: string
+  day_number: number
+  title: string
+  description: string | null
+  video_provider: string | null
+  video_ref: string | null
+  task_description: string | null
+  unlock_at: string
+  deadline_at: string
+  is_locked: boolean
+  is_overdue: boolean
+  status: MissionStatus
+  submission: MissionSubmission | null
+}
+
+// ── Push Subscription (Web Push API) ─────────────────────────
+// Match BE /api/learn/push/* DTOs.
+export interface PushSubscribePayload {
+  endpoint: string
+  p256dh_key: string
+  auth_key: string
+  user_agent?: string
+}
+
+export interface PushSubscribeResponse {
+  id: string
+  created_at: string
+}
+
+export interface PushUnsubscribePayload {
+  endpoint: string
+}
+
+export interface PushUnsubscribeResponse {
+  deleted: boolean
+}
+
+export interface PushSubscriptionInfo {
+  id: string
+  user_agent: string | null
+  created_at: string
+  updated_at: string
 }
 
 // ── Metaphysical ─────────────────────────────────────────────

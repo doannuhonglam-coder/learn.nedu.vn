@@ -1,7 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 const mockProfile = {
   id: 'stu-001',
   full_name: 'Nguyễn Minh Anh',
@@ -56,19 +54,19 @@ const mockStreak = {
 }
 
 export const profileHandlers = [
-  http.get(`${API}/api/v1/profile`, () => {
+  http.get(`*/api/learn/profile`, () => {
     return HttpResponse.json(mockProfile)
   }),
 
-  http.get(`${API}/api/v1/profile/metaphysical`, () => {
+  http.get(`*/api/learn/profile/metaphysical`, () => {
     return HttpResponse.json(mockMetaphysical)
   }),
 
-  http.get(`${API}/api/v1/profile/streak`, () => {
+  http.get(`*/api/learn/profile/streak`, () => {
     return HttpResponse.json(mockStreak)
   }),
 
-  http.get(`${API}/api/v1/profile/metaphysical/pdf`, () => {
+  http.get(`*/api/learn/profile/metaphysical/pdf`, () => {
     return new HttpResponse(null, { status: 200, headers: { 'Content-Type': 'application/pdf' } })
   }),
 ]

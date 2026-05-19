@@ -1,7 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 const mockEnrollments = [
   {
     id: 'enr-001',
@@ -244,11 +242,11 @@ const mockLessonDetail = {
 }
 
 export const coursesHandlers = [
-  http.get(`${API}/api/v1/enrollments`, () => {
+  http.get(`*/api/learn/enrollments`, () => {
     return HttpResponse.json(mockEnrollments)
   }),
 
-  http.get(`${API}/api/v1/enrollments/:id`, ({ params }) => {
+  http.get(`*/api/learn/enrollments/:id`, ({ params }) => {
     const enrollment = mockEnrollments.find((e) => e.id === params.id)
     if (!enrollment) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Not found', request_id: 'req-x' }, { status: 404 })
     return HttpResponse.json({
@@ -261,24 +259,24 @@ export const coursesHandlers = [
     })
   }),
 
-  http.get(`${API}/api/v1/courses/:id`, ({ params }) => {
+  http.get(`*/api/learn/courses/:id`, ({ params }) => {
     if (params.id === 'crs-002') return HttpResponse.json(mockRetreatDetail)
     return HttpResponse.json(mockCourseDetail)
   }),
 
-  http.get(`${API}/api/v1/courses/:id/lessons`, () => {
+  http.get(`*/api/learn/courses/:id/lessons`, () => {
     return HttpResponse.json(mockLessons)
   }),
 
-  http.get(`${API}/api/v1/courses/:id/materials`, () => {
+  http.get(`*/api/learn/courses/:id/materials`, () => {
     return HttpResponse.json(mockLessonDetail.materials)
   }),
 
-  http.get(`${API}/api/v1/lessons/:id`, () => {
+  http.get(`*/api/learn/lessons/:id`, () => {
     return HttpResponse.json(mockLessonDetail)
   }),
 
-  http.post(`${API}/api/v1/lessons/:id/progress`, async ({ request }) => {
+  http.post(`*/api/learn/lessons/:id/progress`, async ({ request }) => {
     const body = await request.json() as { watch_percent: number }
     return HttpResponse.json({
       lesson_id: 'les-007',
@@ -293,11 +291,11 @@ export const coursesHandlers = [
     })
   }),
 
-  http.get(`${API}/api/v1/lessons/:id/notes`, () => {
+  http.get(`*/api/learn/lessons/:id/notes`, () => {
     return HttpResponse.json({ content: mockLessonDetail.notes })
   }),
 
-  http.put(`${API}/api/v1/lessons/:id/notes`, async ({ request }) => {
+  http.put(`*/api/learn/lessons/:id/notes`, async ({ request }) => {
     const body = await request.json() as { content: string }
     return HttpResponse.json({ content: body.content })
   }),

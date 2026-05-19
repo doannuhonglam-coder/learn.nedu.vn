@@ -1,7 +1,5 @@
 import { http, HttpResponse } from 'msw'
 
-const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
-
 const mockCertificates = [
   {
     id: 'cert-001',
@@ -33,11 +31,11 @@ const mockCertificates = [
 ]
 
 export const certificatesHandlers = [
-  http.get(`${API}/api/v1/certificates`, () => {
+  http.get(`*/api/learn/certificates`, () => {
     return HttpResponse.json(mockCertificates)
   }),
 
-  http.get(`${API}/api/v1/certificates/:id`, ({ params }) => {
+  http.get(`*/api/learn/certificates/:id`, ({ params }) => {
     const cert = mockCertificates.find((c) => c.id === params.id)
     if (!cert) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Not found', request_id: 'req-x' }, { status: 404 })
     return HttpResponse.json({
