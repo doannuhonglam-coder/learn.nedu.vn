@@ -276,15 +276,21 @@ const mockNotifications = [
   { id: 'notif-004', type: 'certificate', icon: '🎓', title: 'Chứng chỉ đã sẵn sàng', body: 'Chứng chỉ khoá KPBT K9 đã được cấp.', created_at: '2026-04-10T10:00:00+07:00', is_read: true, action_url: null },
 ]
 
+// Mock 5-system vault facets — opaque jsonb passthrough match BE
+// /api/learn/profile/metaphysical contract. FE chỉ check is_available
+// + count facets, không inspect inner shape ở list view.
 const mockMetaphysical = {
-  student_id: 'stu-001',
-  bazi: { day_master: 'Nhâm Thân', element: 'Thủy', summary: 'Bạn mang mệnh Thủy — linh hoạt, thông minh, giỏi giao tiếp.', pillars: {} },
-  nine_star_ki: { main_star: 7, star_name: 'Sao 7 Kim', energy_pattern: 'Kim — Thu hoạch & Hoàn thiện', summary: 'Sao 7 Kim đại diện cho năng lượng thu hoạch và sự tinh tế.' },
-  numerology: { life_path: 7, expression: 5, soul_urge: 3, summary: 'Life Path 7 — Con đường của người tìm kiếm chân lý.' },
-  mbti: { type: 'INFJ', summary: 'INFJ — Nhà tư vấn. Trực giác mạnh, lý tưởng.' },
-  enneagram: { type: '4', wing: '5', summary: 'Enneagram 4w5 — Nghệ sĩ tư duy.' },
-  recommended_path_note: 'Minh Anh nên tập trung phát triển kỹ năng lãnh đạo cảm xúc.',
-  last_updated_at: '2026-03-15T10:00:00Z',
+  user_id: 'usr-001',
+  facets: {
+    bazi: { day_master: 'Nhâm Thân', element: 'Thủy' },
+    nine_star_ki: { main_star: 7, star_name: 'Sao 7 Kim' },
+    tu_vi: { menh: 'Tử Vi tại Mệnh', than: 'Thiên Phủ tại Thân' },
+    numerology: { life_path: 7, expression: 5 },
+    western_astrology: { sun: 'Capricorn', moon: 'Cancer', rising: 'Virgo' },
+  },
+  cached_at: '2026-03-15T10:00:00Z',
+  is_stale: false,
+  is_available: true,
 }
 
 const mockStreak = { current_streak_weeks: 4, longest_streak_weeks: 8, total_lessons_completed: 32, last_activity_at: '2026-04-12T15:30:00Z' }

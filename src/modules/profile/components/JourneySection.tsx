@@ -26,14 +26,15 @@ export function JourneySection({
   const unlockedCerts = (certificates || []).filter((c) => !c.is_locked)
   const latestCert = unlockedCerts[0]
 
-  const baziTags: string[] = []
-  if (metaphysical?.bazi) baziTags.push(metaphysical.bazi.day_master)
-  if (metaphysical?.enneagram) baziTags.push('Ma Kết')
-  if (metaphysical?.nine_star_ki) baziTags.push(metaphysical.nine_star_ki.star_name)
-  const baziSummary =
-    baziTags.length > 0
-      ? baziTags.slice(0, 3).join(' · ')
-      : 'Nhâm Thân · Ma Kết · Sao 7 Kim'
+  // Vault facets shape là opaque Record — không pluck specific field ở list
+  // view (defer detail rendering). Show summary đơn giản: "Đã có N/5 hệ thống"
+  // hoặc placeholder nếu chưa available.
+  const availableFacets = metaphysical
+    ? Object.values(metaphysical.facets).filter((f) => f !== null).length
+    : 0
+  const baziSummary = metaphysical?.is_available
+    ? `Đã phân tích ${availableFacets}/5 hệ thống${metaphysical.is_stale ? ' · đang refresh' : ''}`
+    : 'Đang phân tích hồ sơ siêu hình…'
 
   const certSummary = latestCert
     ? `Mới nhất: ${latestCert.title.replace('Chứng chỉ ', '')}`

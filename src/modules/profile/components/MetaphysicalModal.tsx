@@ -11,21 +11,58 @@ interface MetaphysicalModalProps {
   studentCode: string | null
 }
 
-export function MetaphysicalModal({ open, onClose, profile, studentName, studentCode }: MetaphysicalModalProps) {
+// 5 vault facets — high-level metadata cho list view. Detail rendering
+// (BaZi pillars, Tử Vi mệnh disc, ...) defer pdf download — vault output
+// shape rich + system-specific, FE không inline render trong modal.
+const FACET_META: Array<{
+  key: keyof MetaphysicalProfile['facets']
+  icon: string
+  title: string
+  description: string
+}> = [
+  { key: 'bazi', icon: '🀄', title: 'BaZi · Tứ Trụ', description: 'Ngũ hành ngày sinh, tứ trụ bát tự' },
+  { key: 'nine_star_ki', icon: '⭐', title: 'Nine Star Ki', description: 'Cửu tinh năng lượng cá nhân' },
+  { key: 'tu_vi', icon: '🌙', title: 'Tử Vi', description: 'Đẩu số cung Mệnh + Thân' },
+  { key: 'numerology', icon: '🔢', title: 'Numerology', description: 'Con số chủ đạo (Life Path / Expression)' },
+  { key: 'western_astrology', icon: '♈', title: 'Cung Hoàng Đạo', description: 'Mặt trời / mặt trăng / rising' },
+]
+
+export function MetaphysicalModal({
+  open,
+  onClose,
+  profile,
+  studentName,
+  studentCode,
+}: MetaphysicalModalProps) {
+  // Trường hợp 1: chưa load xong
   if (!profile) {
     return (
       <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
         <div className="text-center py-8">
           <p className="text-4xl mb-3">🌿</p>
-          <p className="text-sm text-gray-500">Chưa có dữ liệu</p>
-          <p className="text-xs text-gray-400 mt-1">Liên hệ Nedu Team để tạo hồ sơ</p>
+          <p className="text-sm text-gray-500">Đang tải hồ sơ…</p>
+        </div>
+      </BottomSheet>
+    )
+  }
+
+  // Trường hợp 2: chưa có data (background job chưa populate)
+  if (!profile.is_available) {
+    return (
+      <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
+        <div className="text-center py-8">
+          <p className="text-4xl mb-3">🌿</p>
+          <p className="text-sm text-gray-500">Đang phân tích hồ sơ siêu hình…</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Nedu Team sẽ hoàn thiện trong vài ngày tới. Liên hệ nếu cần gấp.
+          </p>
         </div>
       </BottomSheet>
     )
   }
 
   const handleDownloadPdf = () => {
-    toast('Đang tạo hồ sơ PDF...', 'success')
+    toast('Tính năng PDF sắp ra mắt', 'success')
   }
 
   return (
@@ -37,72 +74,57 @@ export function MetaphysicalModal({ open, onClose, profile, studentName, student
           <div>
             <p className="text-sm font-semibold text-brand-dark">{studentName}</p>
             <p className="text-xs text-gray-500">{studentCode}</p>
-            <p className="text-[11px] text-gray-400">Phân tích 5 hệ thống</p>
+            <p className="text-[11px] text-gray-400">
+              Phân tích 5 hệ thống · cập nhật{' '}
+              {profile.cached_at
+                ? new Date(profile.cached_at).toLocaleDateString('vi-VN')
+                : 'gần đây'}
+              {profile.is_stale && ' · đang refresh'}
+            </p>
           </div>
         </div>
 
-        {/* BaZi */}
-        {profile.bazi && (
-          <Section icon="🀄" title="BaZi · Tứ Trụ" subtitle={profile.bazi.day_master}>
-            <p className="text-sm text-gray-600 leading-relaxed">{profile.bazi.summary}</p>
-          </Section>
-        )}
+        {/* Facets — high-level badge per system */}
+        <div className="space-y-2">
+          {FACET_META.map((meta) => {
+            const facet = profile.facets[meta.key]
+            const available = facet !== null
+            return (
+              <div
+                key={meta.key}
+                className={`rounded-xl p-4 ${available ? 'bg-gray-50' : 'bg-gray-100 opacity-60'}`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span>{meta.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-brand-dark">{meta.title}</p>
+                    <p className="text-xs text-gray-500">{meta.description}</p>
+                  </div>
+                  {available ? (
+                    <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                      đã có
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-gray-400">đang phân tích</span>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
 
-        {/* Nine Star Ki */}
-        {profile.nine_star_ki && (
-          <Section icon="⭐" title="Nine Star Ki" subtitle={profile.nine_star_ki.star_name}>
-            <p className="text-xs text-brand-purple mb-1">{profile.nine_star_ki.energy_pattern}</p>
-            <p className="text-sm text-gray-600 leading-relaxed">{profile.nine_star_ki.summary}</p>
-          </Section>
-        )}
-
-        {/* MBTI / Enneagram */}
-        {profile.mbti && (
-          <Section icon="🧠" title="MBTI" subtitle={profile.mbti.type}>
-            <p className="text-sm text-gray-600 leading-relaxed">{profile.mbti.summary}</p>
-          </Section>
-        )}
-
-        {profile.enneagram && (
-          <Section icon="🔄" title="Enneagram" subtitle={`Type ${profile.enneagram.type}${profile.enneagram.wing ? `w${profile.enneagram.wing}` : ''}`}>
-            <p className="text-sm text-gray-600 leading-relaxed">{profile.enneagram.summary}</p>
-          </Section>
-        )}
-
-        {/* Numerology */}
-        {profile.numerology && (
-          <Section icon="🔢" title="Numerology" subtitle={`Life Path ${profile.numerology.life_path}`}>
-            <p className="text-sm text-gray-600 leading-relaxed">{profile.numerology.summary}</p>
-          </Section>
-        )}
-
-        {/* Recommended path */}
-        {profile.recommended_path_note && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <p className="text-xs font-medium text-amber-700 mb-1">💡 Ghi chú từ Nedu Team</p>
-            <p className="text-sm text-amber-900 leading-relaxed">{profile.recommended_path_note}</p>
-          </div>
-        )}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-xs font-medium text-amber-700 mb-1">💡 Mẹo</p>
+          <p className="text-sm text-amber-900 leading-relaxed">
+            Chi tiết từng hệ thống sẽ có trong file PDF. Liên hệ Nedu Team
+            nếu cần đọc kỹ hoặc tư vấn lộ trình.
+          </p>
+        </div>
 
         <Button className="w-full" onClick={handleDownloadPdf}>
           Tải Hồ Sơ PDF ↓
         </Button>
       </div>
     </BottomSheet>
-  )
-}
-
-function Section({ icon, title, subtitle, children }: { icon: string; title: string; subtitle: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-gray-50 rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span>{icon}</span>
-        <div>
-          <p className="text-sm font-semibold text-brand-dark">{title}</p>
-          <p className="text-xs text-brand-purple font-medium">{subtitle}</p>
-        </div>
-      </div>
-      {children}
-    </div>
   )
 }

@@ -258,15 +258,26 @@ export interface CoachingSessionDetail extends CoachingSessionSummary {
 }
 
 // ── Metaphysical ─────────────────────────────────────────────
+// 5-system vault facets cache passthrough — match BE
+// /api/learn/profile/metaphysical contract. Mỗi facet là opaque
+// Record vì vault output shape rich + system-specific (BaZi pillars,
+// Tử Vi mệnh disc, etc.) — FE chỉ render high-level "available" indicator
+// + defer detail to PDF download.
+//
+// Note: drop MBTI + Enneagram (không phải vault 5-system). Add Tử Vi +
+// Western Astrology (cung hoàng đạo) thay thế.
 export interface MetaphysicalProfile {
-  student_id: string
-  bazi: { day_master: string; element: string; summary: string; pillars: object } | null
-  nine_star_ki: { main_star: number; star_name: string; energy_pattern: string; summary: string } | null
-  numerology: { life_path: number; expression: number; soul_urge: number; summary: string } | null
-  mbti: { type: string; summary: string } | null
-  enneagram: { type: string; wing: string | null; summary: string } | null
-  recommended_path_note: string | null
-  last_updated_at: string
+  user_id: string
+  facets: {
+    bazi: Record<string, unknown> | null
+    nine_star_ki: Record<string, unknown> | null
+    tu_vi: Record<string, unknown> | null
+    numerology: Record<string, unknown> | null
+    western_astrology: Record<string, unknown> | null
+  }
+  cached_at: string | null
+  is_stale: boolean
+  is_available: boolean
 }
 
 // ── Streak ───────────────────────────────────────────────────
