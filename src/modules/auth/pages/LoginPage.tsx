@@ -2,17 +2,27 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from '../../../shared/components/ui/Toast'
 import { useAuthStore } from '../../../shared/stores/auth.store'
+import { env } from '../../../shared/config/env'
 import { authService } from '../services/auth.service'
 
 // LoginPage — email + password only (US-40).
 // Học viên có tài khoản đã được provision tự động khi ops chốt enrollment
 // → email kích hoạt gửi từ auth-central → click → set password → auto-login.
 // KHÔNG có self-signup, KHÔNG có Google OAuth Phase 1.
+//
+// Mock mode (VITE_ENABLE_MOCKING=true): pre-fill credentials khớp với mock
+// auth handler — dev chỉ cần bấm "Đăng nhập" để vào ngay, không gõ tay.
+// Credentials accepted bởi mocks/handlers/auth.handlers.ts:
+//   - minhanh@example.com / password123  (default mock user)
+//   - test@nedu.vn / password123
+const MOCK_DEFAULT_EMAIL = 'minhanh@example.com'
+const MOCK_DEFAULT_PASSWORD = 'password123'
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const setSession = useAuthStore((s) => s.setSession)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState(env.IS_MOCK ? MOCK_DEFAULT_EMAIL : '')
+  const [password, setPassword] = useState(env.IS_MOCK ? MOCK_DEFAULT_PASSWORD : '')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
