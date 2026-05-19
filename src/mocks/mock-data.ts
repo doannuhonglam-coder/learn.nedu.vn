@@ -17,10 +17,6 @@ const mockHomeSummary = {
   student: { id: 'stu-001', full_name: 'Nguyễn Minh Anh', status_label: 'Học viên Nedu' },
   stats: { active_courses: 4, completion_percent: 42, certificates_count: 1 },
   noi_status: { status: 'active', label: 'N-ơi · Đang hoạt động', checkins: 12, streak_weeks: 4, ninety_day_percent: 67 },
-  pending_payment: {
-    payment_id: 'pay-001', enrollment_id: 'enr-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12',
-    installment_label: 'Đợt 2', amount: 5500000, due_date: '2026-04-25', status: 'pending', status_label: 'Chờ thanh toán',
-  },
   upcoming_events: [
     { id: 'evt-001', title: 'Live Q&A: Cảm Xúc Trong Lãnh Đạo', event_type: 'online', start_time: '2026-04-15T19:00:00+07:00', end_time: '2026-04-15T20:30:00+07:00', platform: 'Zoom', location: null },
     { id: 'evt-002', title: 'Retreat Tĩnh Tâm Đà Lạt', event_type: 'retreat', start_time: '2026-05-01T08:00:00+07:00', end_time: '2026-05-03T17:00:00+07:00', platform: null, location: 'Đà Lạt' },
@@ -44,11 +40,11 @@ const mockContinueLearning = {
 }
 
 const mockEnrollments = [
-  { id: 'enr-001', course: { id: 'crs-001', name: 'Lãnh Đạo Cảm Xúc Mùa 12', slug: 'lcm-12', course_type: 'cohort', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: '2026-03-01', cohort_end_date: '2026-06-01', coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 3, total_modules: 8, metaphysical_match_score: 85 }, status: 'active', payment_status: 'partial', progress_percent: 42, enrolled_at: '2026-03-01T00:00:00Z', expired_at: null },
-  { id: 'enr-002', course: { id: 'crs-002', name: 'Retreat Tĩnh Tâm Đà Lạt', slug: 'retreat-dalat-2026', course_type: 'retreat', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: '2026-05-01', retreat_end_date: '2026-05-03', retreat_countdown_seconds: 1555200, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: null, coaching_sessions_total: null, current_module: null, total_modules: null, metaphysical_match_score: null }, status: 'active', payment_status: 'paid', progress_percent: 0, enrolled_at: '2026-02-15T00:00:00Z', expired_at: null },
-  { id: 'enr-003', course: { id: 'crs-003', name: 'Con Số & Cuộc Bạn', slug: 'cscb-on-demand', course_type: 'on_demand', status: 'published', instructor_name: 'Thầy Minh', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 7, total_modules: 11, metaphysical_match_score: null }, status: 'active', payment_status: 'paid', progress_percent: 65, enrolled_at: '2026-01-20T00:00:00Z', expired_at: null },
-  { id: 'enr-004', course: { id: 'crs-004', name: 'Coaching 1:1 với Chị Nhí', slug: 'coaching-nhi-2026', course_type: 'coaching', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: 3, coaching_sessions_total: 8, current_module: null, total_modules: null, metaphysical_match_score: null }, status: 'active', payment_status: 'paid', progress_percent: 37, enrolled_at: '2026-02-01T00:00:00Z', expired_at: null },
-  { id: 'enr-005', course: { id: 'crs-005', name: 'Khám Phá Bản Thân K9', slug: 'kpbt-k9', course_type: 'cohort', status: 'published', instructor_name: 'Thầy Minh', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: '2025-09-01', cohort_end_date: '2025-12-01', coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 8, total_modules: 8, metaphysical_match_score: null }, status: 'completed', payment_status: 'paid', progress_percent: 100, enrolled_at: '2025-09-01T00:00:00Z', expired_at: null },
+  { id: 'enr-001', course: { id: 'crs-001', name: 'Lãnh Đạo Cảm Xúc Mùa 12', slug: 'lcm-12', course_type: 'cohort', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: '2026-03-01', cohort_end_date: '2026-06-01', coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 3, total_modules: 8, metaphysical_match_score: 85 }, status: 'active', progress_percent: 42, enrolled_at: '2026-03-01T00:00:00Z', expired_at: null },
+  { id: 'enr-002', course: { id: 'crs-002', name: 'Retreat Tĩnh Tâm Đà Lạt', slug: 'retreat-dalat-2026', course_type: 'retreat', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: '2026-05-01', retreat_end_date: '2026-05-03', retreat_countdown_seconds: 1555200, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: null, coaching_sessions_total: null, current_module: null, total_modules: null, metaphysical_match_score: null }, status: 'active', progress_percent: 0, enrolled_at: '2026-02-15T00:00:00Z', expired_at: null },
+  { id: 'enr-003', course: { id: 'crs-003', name: 'Con Số & Cuộc Bạn', slug: 'cscb-on-demand', course_type: 'on_demand', status: 'published', instructor_name: 'Thầy Minh', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 7, total_modules: 11, metaphysical_match_score: null }, status: 'active', progress_percent: 65, enrolled_at: '2026-01-20T00:00:00Z', expired_at: null },
+  { id: 'enr-004', course: { id: 'crs-004', name: 'Coaching 1:1 với Chị Nhí', slug: 'coaching-nhi-2026', course_type: 'coaching', status: 'published', instructor_name: 'Chị Nhí Lê', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: null, cohort_end_date: null, coaching_sessions_completed: 3, coaching_sessions_total: 8, current_module: null, total_modules: null, metaphysical_match_score: null }, status: 'active', progress_percent: 37, enrolled_at: '2026-02-01T00:00:00Z', expired_at: null },
+  { id: 'enr-005', course: { id: 'crs-005', name: 'Khám Phá Bản Thân K9', slug: 'kpbt-k9', course_type: 'cohort', status: 'published', instructor_name: 'Thầy Minh', thumbnail_url: null, retreat_date: null, retreat_end_date: null, retreat_countdown_seconds: null, cohort_start_date: '2025-09-01', cohort_end_date: '2025-12-01', coaching_sessions_completed: null, coaching_sessions_total: null, current_module: 8, total_modules: 8, metaphysical_match_score: null }, status: 'completed', progress_percent: 100, enrolled_at: '2025-09-01T00:00:00Z', expired_at: null },
 ]
 
 const mockCourseDetail = {
@@ -268,18 +264,6 @@ const mockEvents = [
   },
 ]
 
-const mockPayments = [
-  { id: 'pay-001', enrollment_id: 'enr-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', installment_number: 2, installment_label: 'Đợt 2', amount: 5500000, status: 'pending', due_date: '2026-04-25', paid_at: null },
-  { id: 'pay-002', enrollment_id: 'enr-001', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', installment_number: 1, installment_label: 'Đợt 1', amount: 5500000, status: 'paid', due_date: '2026-03-01', paid_at: '2026-02-28T10:00:00Z' },
-  { id: 'pay-003', enrollment_id: 'enr-002', course_name: 'Retreat Tĩnh Tâm Đà Lạt', installment_number: 1, installment_label: 'Thanh toán đầy đủ', amount: 8000000, status: 'paid', due_date: '2026-03-15', paid_at: '2026-03-10T15:30:00Z' },
-  { id: 'pay-004', enrollment_id: 'enr-003', course_name: 'Con Số & Cuộc Bạn', installment_number: 1, installment_label: 'Thanh toán đầy đủ', amount: 3200000, status: 'paid', due_date: '2026-01-20', paid_at: '2026-01-18T09:00:00Z' },
-]
-
-const mockPaymentDetail = {
-  ...mockPayments[0],
-  bank_info: { bank_name: 'Vietcombank', account_number: '1234567890', account_name: 'CÔNG TY TNHH NEDU EDUCATION', transfer_content: 'NEDU LCM12 NGUYEN MINH ANH DOT2', qr_code_url: 'https://placehold.co/200x200/1a1a2e/c8a951?text=QR+Code' },
-}
-
 const mockAssignments = [
   { id: 'asg-001', title: 'Bài tập: Nhật ký cảm xúc tuần 3', course_name: 'Lãnh Đạo Cảm Xúc Mùa 12', course_id: 'crs-001', due_date: '2026-04-16T23:59:00+07:00', status: 'not_submitted', is_urgent: true, description: 'Viết nhật ký cảm xúc mỗi ngày trong tuần 3.', max_file_size_mb: 10, allowed_file_types: ['pdf', 'docx', 'jpg', 'png'], submission: null },
   { id: 'asg-002', title: 'Reflection: Giá trị cốt lõi của bạn', course_name: 'Con Số & Cuộc Bạn', course_id: 'crs-003', due_date: '2026-04-22T23:59:00+07:00', status: 'not_submitted', is_urgent: false, description: 'Viết bài reflection 500-1000 từ.', max_file_size_mb: 10, allowed_file_types: ['pdf', 'docx'], submission: null },
@@ -287,7 +271,6 @@ const mockAssignments = [
 ]
 
 const mockNotifications = [
-  { id: 'notif-001', type: 'payment', icon: '💳', title: 'Nhắc thanh toán Đợt 2', body: 'Đợt 2 khoá LCM12 sắp đến hạn.', created_at: '2026-04-12T08:00:00+07:00', is_read: false, action_url: '/payments' },
   { id: 'notif-002', type: 'assignment', icon: '📝', title: 'Bài tập sắp hết hạn', body: 'Nhật ký cảm xúc tuần 3 - Hạn 16/04.', created_at: '2026-04-13T07:00:00+07:00', is_read: false, action_url: null },
   { id: 'notif-003', type: 'schedule', icon: '📅', title: 'Lịch học ngày mai', body: 'Live Q&A 19:00 ngày 15/04 trên Zoom.', created_at: '2026-04-14T08:00:00+07:00', is_read: false, action_url: '/schedule' },
   { id: 'notif-004', type: 'certificate', icon: '🎓', title: 'Chứng chỉ đã sẵn sàng', body: 'Chứng chỉ khoá KPBT K9 đã được cấp.', created_at: '2026-04-10T10:00:00+07:00', is_read: true, action_url: null },
@@ -338,8 +321,6 @@ export function getMockResponse(rawPath: string, _method: string): any {
   if (path === '/profile/metaphysical') return mockMetaphysical
   if (path === '/profile/streak') return mockStreak
   if (path === '/certificates') return mockCertificates
-  if (path === '/payments') return mockPayments
-  if (path === '/payments/pending') return mockHomeSummary.pending_payment
   if (path === '/assignments') return mockAssignments
   if (path === '/notifications') return mockNotifications
   if (path === '/schedule/events') return mockEvents
@@ -360,8 +341,6 @@ export function getMockResponse(rawPath: string, _method: string): any {
   if (path.match(/^\/lessons\/[^/]+$/)) return mockLessonDetail
   if (path.match(/^\/lessons\/[^/]+\/notes/)) return { content: mockLessonDetail.notes }
   if (path.match(/^\/lessons\/[^/]+\/progress/)) return { lesson_id: 'les-007', is_completed: true, watch_percent: 80, completed_at: new Date().toISOString(), course_progress_updated: { progress_percent: 48, is_course_completed: false, certificate_unlocked: false } }
-  if (path.match(/^\/payments\/[^/]+\/confirm/)) return { message: 'Confirmed', status: 'awaiting_verification' }
-  if (path.match(/^\/payments\/[^/]+$/)) return mockPaymentDetail
   if (path.match(/^\/assignments\/[^/]+\/submit/)) return { id: 'sub-new', content: '', file_url: null, submitted_at: new Date().toISOString(), grade: null, feedback: null, graded_at: null }
   if (path.match(/^\/notifications\/mark-read/)) return { count: 3 }
 

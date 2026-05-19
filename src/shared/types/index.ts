@@ -22,7 +22,6 @@ export interface HomeSummary {
   student: { id: string; full_name: string; status_label: string }
   stats: { active_courses: number; completion_percent: number; certificates_count: number }
   noi_status: NoiStatus | null
-  pending_payment: PendingPaymentAlert | null
   upcoming_events: UpcomingEventSummary[]
   pending_assignments: PendingAssignmentSummary[]
   recent_courses: CourseSummary[]
@@ -147,7 +146,6 @@ export interface EnrollmentSummary {
   id: string
   course: CourseSummary
   status: 'active' | 'completed' | 'expired' | 'cancelled'
-  payment_status: 'pending' | 'partial' | 'paid' | 'overdue' | 'waived'
   progress_percent: number
   enrolled_at: string
   expired_at: string | null
@@ -159,42 +157,13 @@ export interface EnrollmentDetail extends EnrollmentSummary {
   lessons_completed: number
   lessons_total: number
   certificates: CertificateSummary[]
-  payments: PaymentSummary[]
 }
 
-// ── Payment ──────────────────────────────────────────────────
-export interface PendingPaymentAlert {
-  payment_id: string
-  enrollment_id: string
-  course_name: string
-  installment_label: string
-  amount: number
-  due_date: string
-  status: 'pending' | 'awaiting_verification'
-  status_label: string
-}
-
-export interface PaymentSummary {
-  id: string
-  enrollment_id: string
-  course_name: string
-  installment_number: number
-  installment_label: string
-  amount: number
-  status: 'pending' | 'awaiting_verification' | 'paid' | 'overdue' | 'waived'
-  due_date: string
-  paid_at: string | null
-}
-
-export interface PaymentDetail extends PaymentSummary {
-  bank_info: {
-    bank_name: string
-    account_number: string
-    account_name: string
-    transfer_content: string
-    qr_code_url: string
-  }
-}
+// ── Payment / installment ────────────────────────────────────
+// Removed: Nedu đã bỏ trả góp (A8 payment bridge dropped). FE không còn
+// render alert "đến hạn thanh toán" / portal /payments. Payment events
+// đơn lẻ (refund / purchase confirmation) vẫn fire qua notifications
+// type='payment'.
 
 // ── Schedule ─────────────────────────────────────────────────
 export interface UpcomingEventSummary {

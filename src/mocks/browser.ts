@@ -3,7 +3,6 @@ import { authHandlers } from './handlers/auth.handlers'
 import { homeHandlers } from './handlers/home.handlers'
 import { coursesHandlers } from './handlers/courses.handlers'
 import { scheduleHandlers } from './handlers/schedule.handlers'
-import { paymentsHandlers } from './handlers/payments.handlers'
 import { assignmentsHandlers } from './handlers/assignments.handlers'
 import { notificationsHandlers } from './handlers/notifications.handlers'
 import { profileHandlers } from './handlers/profile.handlers'
@@ -14,7 +13,6 @@ export const worker = setupWorker(
   ...homeHandlers,
   ...coursesHandlers,
   ...scheduleHandlers,
-  ...paymentsHandlers,
   ...assignmentsHandlers,
   ...notificationsHandlers,
   ...profileHandlers,

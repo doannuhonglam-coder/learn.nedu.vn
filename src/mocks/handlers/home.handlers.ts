@@ -22,16 +22,6 @@ export const homeHandlers = [
         streak_weeks: 4,
         ninety_day_percent: 67,
       },
-      pending_payment: {
-        payment_id: 'pay-001',
-        enrollment_id: 'enr-001',
-        course_name: 'Lãnh Đạo Cảm Xúc Mùa 12',
-        installment_label: 'Đợt 2',
-        amount: 5500000,
-        due_date: '2026-04-25',
-        status: 'pending',
-        status_label: 'Chờ thanh toán',
-      },
       upcoming_events: [
         {
           id: 'evt-001',

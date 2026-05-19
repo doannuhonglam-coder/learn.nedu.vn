@@ -4,11 +4,9 @@ import { useHomeSummary, useContinueLearning } from '../hooks/useHomeData'
 import { useAssignments } from '../../assignments/hooks/useAssignments'
 import { useScheduleEvents } from '../../schedule/hooks/useSchedule'
 import { WelcomeHeader } from '../components/WelcomeHeader'
-import { PaymentAlertBanner } from '../components/PaymentAlertBanner'
 import { HeroContinueWidget } from '../components/HeroContinueWidget'
 import { UpcomingEventsList } from '../components/UpcomingEventsList'
 import { AssignmentsList } from '../components/AssignmentsList'
-import { PaymentModal } from '../../payments/components/PaymentModal'
 import { CourseModal } from '../../courses/components/CourseModal'
 import { SubmitModal } from '../../assignments/components/SubmitModal'
 import { EventModal } from '../../schedule/components/EventModal'
@@ -23,7 +21,6 @@ export default function HomePage() {
     `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   )
 
-  const [paymentId, setPaymentId] = useState<string | null>(null)
   const [courseModalId, setCourseModalId] = useState<string | null>(null)
   const [courseModalTab, setCourseModalTab] = useState<string | undefined>()
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDetail | null>(null)
@@ -60,13 +57,6 @@ export default function HomePage() {
         completionPercent={summary.stats.completion_percent}
       />
 
-      {summary.pending_payment && (
-        <PaymentAlertBanner
-          payment={summary.pending_payment}
-          onPayClick={() => setPaymentId(summary.pending_payment!.payment_id)}
-        />
-      )}
-
       {continueLearning && (
         <div className="mt-3">
           <HeroContinueWidget
@@ -86,7 +76,6 @@ export default function HomePage() {
         onOpenAssignment={handleOpenAssignment}
       />
 
-      <PaymentModal paymentId={paymentId} onClose={() => setPaymentId(null)} />
       <CourseModal
         courseId={courseModalId}
         initialTab={courseModalTab}

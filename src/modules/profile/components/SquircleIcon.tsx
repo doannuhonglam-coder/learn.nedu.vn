@@ -4,7 +4,6 @@ type IconKind =
   | 'leaf'      // BaZi / nature
   | 'medal'     // Certificates
   | 'flame'     // Streak
-  | 'invoice'   // Payments
   | 'gear'      // Settings
   | 'chat'      // Support
 
@@ -12,7 +11,6 @@ const GRADIENTS: Record<IconKind, { from: string; to: string }> = {
   leaf: { from: '#34D399', to: '#059669' },
   medal: { from: '#FDE68A', to: '#B45309' },
   flame: { from: '#FB923C', to: '#C2410C' },
-  invoice: { from: '#94A3B8', to: '#475569' },
   gear: { from: '#A78BFA', to: '#6D28D9' },
   chat: { from: '#34D399', to: '#0D9488' },
 }
@@ -78,16 +76,6 @@ export function SquircleIcon({ kind, size = 36 }: SquircleIconProps) {
             d="M18 26C16 26 15 24.5 15 23C15 21.5 16 20.5 17 19.5C17 21 17.5 21.5 18 22C18.5 21 19 20 19.5 19C20.5 20 21 21.5 21 22.5C21 24.5 20 26 18 26Z"
             fill="rgba(251,146,60,0.7)"
           />
-        </>
-      )}
-
-      {kind === 'invoice' && (
-        <>
-          <rect x="9" y="6" width="18" height="24" rx="2.5" fill="rgba(255,255,255,0.22)" stroke="white" strokeWidth="1.4" />
-          <line x1="12" y1="13" x2="24" y2="13" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
-          <line x1="12" y1="17" x2="24" y2="17" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
-          <line x1="12" y1="21" x2="20" y2="21" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
-          <line x1="12" y1="25" x2="22" y2="25" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
         </>
       )}
 

@@ -68,7 +68,6 @@ export default function ProfilePage() {
       />
 
       <AccountSection
-        pendingPayment={homeSummary?.pending_payment || null}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenSupport={() => setSupportOpen(true)}
       />

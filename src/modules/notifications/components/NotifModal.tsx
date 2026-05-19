@@ -18,7 +18,10 @@ interface NotifModalProps {
 function getNotifRoute(notif: NotificationSummary): string {
   if (notif.action_url) return notif.action_url
   switch (notif.type) {
-    case 'payment': return '/payments'
+    // 'payment' type vẫn fire cho non-installment events (refund / purchase
+    // confirmation) — không có /payments portal nữa, route về /profile để
+    // học viên xem account info.
+    case 'payment': return '/profile'
     case 'assignment': return '/courses'
     case 'schedule': return '/schedule'
     case 'certificate': return '/profile'

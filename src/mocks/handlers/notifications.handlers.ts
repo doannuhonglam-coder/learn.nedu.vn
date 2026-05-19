@@ -4,16 +4,6 @@ const API = import.meta.env.VITE_API_URL || 'https://api.nedu.vn'
 
 const mockNotifications = [
   {
-    id: 'notif-001',
-    type: 'payment',
-    icon: '💳',
-    title: 'Nhắc thanh toán Đợt 2',
-    body: 'Đợt 2 khoá Lãnh Đạo Cảm Xúc Mùa 12 sắp đến hạn (25/04). Vui lòng thanh toán trước hạn.',
-    created_at: '2026-04-12T08:00:00+07:00',
-    is_read: false,
-    action_url: '/payments',
-  },
-  {
     id: 'notif-002',
     type: 'assignment',
     icon: '📝',
