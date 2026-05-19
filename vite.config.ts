@@ -2,6 +2,7 @@ import { defineConfig, type PluginOption } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { cloudflare } from '@cloudflare/vite-plugin'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 import { writeFileSync } from 'node:fs'
 
@@ -26,6 +27,8 @@ function generateHeadersPlugin(): PluginOption {
         "img-src 'self' data: https:",
         "font-src 'self' data: https://fonts.gstatic.com",
         `connect-src 'self' ${apiUrl} ${authUrl} https://cloudflareinsights.com`,
+        "worker-src 'self'",
+        "manifest-src 'self'",
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'",
@@ -53,11 +56,105 @@ function generateHeadersPlugin(): PluginOption {
   }
 }
 
+// Escape regex special chars để build pattern an toàn từ URL config.
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// API origin từ env build-time (vd: https://api.nedu.vn). Dùng để build
+// regex urlPattern cho Workbox runtime caching — KHÔNG cache API.
+const apiOrigin = (() => {
+  const raw = process.env.VITE_API_URL || 'https://api.nedu.vn'
+  try {
+    return new URL(raw).origin
+  } catch {
+    return raw
+  }
+})()
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
     cloudflare(),
+    VitePWA({
+      registerType: 'prompt',
+      strategies: 'generateSW',
+      injectRegister: false, // we register manually trong src/shared/pwa
+      // PWA service worker chỉ active ở production build — tránh xung đột với
+      // MSW (dev-only, /mockServiceWorker.js).
+      devOptions: { enabled: false },
+      includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
+      manifest: {
+        name: 'N-Edu Learn',
+        short_name: 'N-Edu Learn',
+        description: 'Bàn học cá nhân — học tập tại NhiLe Education',
+        lang: 'vi',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        orientation: 'portrait',
+        theme_color: '#F5B731',
+        background_color: '#FFFFFF',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: '/icons/icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        // Precache tất cả built assets — Workbox tự sinh manifest.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+        // Skip MSW worker — KHÔNG precache, KHÔNG để Workbox handle.
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/mockServiceWorker\.js$/],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: false, // chờ user confirm update qua UpdatePrompt
+        runtimeCaching: [
+          {
+            // API calls: KHÔNG cache — lesson progress, auth, payment phải tươi.
+            // Pattern build từ VITE_API_URL build-time, inlined vào SW.
+            urlPattern: new RegExp(`^${escapeRegex(apiOrigin)}/`),
+            handler: 'NetworkOnly',
+          },
+          {
+            // Google Fonts CSS
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            // Google Fonts files (immutable, cache 1 năm)
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Static images cross-origin (avatar CDN, lesson thumbnails)
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images',
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
+    }),
     generateHeadersPlugin(),
   ],
   resolve: {

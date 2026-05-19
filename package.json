@@ -11,7 +11,8 @@
     "cf:build": "tsc -b && vite build",
     "deploy:dev": "npm run build && wrangler deploy --name nedu-learn-dev",
     "deploy:prod": "npm run build && wrangler deploy --name nedu-learn-prod",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "pwa:icons": "node scripts/generate-pwa-icons.mjs"
   },
   "dependencies": {
     "@microsoft/clarity": "^1.0.2",
@@ -37,10 +38,12 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "msw": "^2.13.2",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.2.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.4",
+    "vite-plugin-pwa": "^1.3.0",
     "wrangler": "^4.87.0"
   },
   "msw": {
