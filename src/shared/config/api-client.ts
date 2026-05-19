@@ -3,8 +3,9 @@ import { useAuthStore } from '../stores/auth.store'
 import { authCentralClient } from './auth-central-client'
 
 // nedu-backend BE — domain endpoints under /api/learn/* (per NL-LEARN-API-PLAN-001).
+// Mock mode (VITE_ENABLE_MOCKING=true): MSW intercept ở SW layer — api-client
+// vẫn gọi fetch bình thường, không bypass. Single source of truth.
 const API_URL = env.VITE_API_URL
-const ENABLE_MOCKING = env.VITE_ENABLE_MOCKING === 'true'
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
@@ -74,12 +75,6 @@ function forceLogout(): void {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  if (ENABLE_MOCKING) {
-    const { getMockResponse } = await import('../../mocks/mock-data')
-    const mockData = getMockResponse(path, options.method || 'GET')
-    if (mockData !== null) return mockData as T
-    return undefined as T
-  }
   return executeFetch<T>(path, options, 0)
 }
 
