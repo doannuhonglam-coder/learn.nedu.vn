@@ -3,6 +3,10 @@ import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { toast } from '../../../shared/components/ui/Toast'
 import { authService } from '../../auth/services/auth.service'
 import { useAuthStore } from '../../../shared/stores/auth.store'
+import {
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+} from '../../notifications/hooks/useNotifications'
 import type { StudentProfile } from '../../../shared/types'
 
 interface SettingsModalProps {
@@ -38,9 +42,14 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
   const [editMode, setEditMode] = useState(false)
   const [fullName, setFullName] = useState(profile.full_name ?? '')
   const [phone, setPhone] = useState(profile.phone || '')
-  const [pushOn, setPushOn] = useState(true)
-  const [emailOn, setEmailOn] = useState(true)
   const [changingPassword, setChangingPassword] = useState(false)
+
+  // Notification preferences từ BE — toggle on/off sync /notifications/preferences.
+  // Optimistic update ở mutation hook → toggle phản hồi tức thì.
+  const { data: prefs } = useNotificationPreferences()
+  const updatePrefs = useUpdateNotificationPreferences()
+  const pushOn = prefs?.push_enabled ?? true
+  const emailOn = prefs?.email_enabled ?? true
 
   // Reset edit state when modal reopens or profile changes
   useEffect(() => {
@@ -191,12 +200,16 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
           >
             <ToggleRow
               icon="🔔"
-              title="Thông báo"
-              sub="Lịch học · Hạn nộp · Học phí"
+              title="Thông báo trên thiết bị"
+              sub="Lịch học · Hạn nộp · Cập nhật khoá học"
               on={pushOn}
               onChange={() => {
-                setPushOn(!pushOn)
-                toast(pushOn ? 'Đã tắt push' : 'Đã bật push', 'success')
+                // Note: chỉ toggle preference flag. Web Push browser subscription
+                // (yêu cầu permission + service worker) là follow-up — khi
+                // push_enabled=true mới prompt browser permission + đăng ký
+                // qua /api/learn/push/subscribe.
+                updatePrefs.mutate({ push_enabled: !pushOn })
+                toast(pushOn ? 'Đã tắt thông báo' : 'Đã bật thông báo', 'success')
               }}
             />
             <div style={{ borderTop: '1px solid rgba(26,24,22,0.08)' }} />
@@ -206,7 +219,7 @@ export function SettingsModal({ open, onClose, profile }: SettingsModalProps) {
               sub="Trước hạn nộp 48 giờ"
               on={emailOn}
               onChange={() => {
-                setEmailOn(!emailOn)
+                updatePrefs.mutate({ email_enabled: !emailOn })
                 toast(emailOn ? 'Đã tắt email' : 'Đã bật email', 'success')
               }}
             />
