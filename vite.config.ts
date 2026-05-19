@@ -78,9 +78,9 @@ export default defineConfig({
     react(),
     cloudflare(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       strategies: 'generateSW',
-      injectRegister: false, // we register manually trong src/shared/pwa
+      injectRegister: 'auto', // vite-plugin-pwa auto-inject registerSW script, không cần React component
       // PWA service worker chỉ active ở production build — tránh xung đột với
       // MSW (dev-only, /mockServiceWorker.js).
       devOptions: { enabled: false },
@@ -115,7 +115,7 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/mockServiceWorker\.js$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: false, // chờ user confirm update qua UpdatePrompt
+        skipWaiting: true, // autoUpdate mode — SW mới activate ngay, user reload sẽ thấy version mới
         runtimeCaching: [
           {
             // API calls: KHÔNG cache — lesson progress, auth, payment phải tươi.
