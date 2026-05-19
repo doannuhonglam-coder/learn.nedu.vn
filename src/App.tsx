@@ -6,6 +6,7 @@ import { protectedRoutes } from './routes/protected.routes'
 import { ToastContainer } from './shared/components/ui/Toast'
 import { Spinner } from './shared/components/ui/Spinner'
 import { RouteTracker } from './shared/analytics/RouteTracker'
+import { UpdatePrompt } from './shared/pwa/UpdatePrompt'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +55,7 @@ export default function App() {
         <RouterProvider router={router} />
       </Suspense>
       <ToastContainer />
+      <UpdatePrompt />
     </QueryClientProvider>
   )
 }
