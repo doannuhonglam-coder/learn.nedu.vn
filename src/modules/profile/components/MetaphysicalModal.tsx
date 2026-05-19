@@ -1,6 +1,5 @@
 import { BottomSheet } from '../../../shared/components/ui/BottomSheet'
 import { Button } from '../../../shared/components/ui/Button'
-import { toast } from '../../../shared/components/ui/Toast'
 import type { MetaphysicalProfile } from '../../../shared/types'
 
 interface MetaphysicalModalProps {
@@ -61,9 +60,8 @@ export function MetaphysicalModal({
     )
   }
 
-  const handleDownloadPdf = () => {
-    toast('Tính năng PDF sắp ra mắt', 'success')
-  }
+  // PDF export deferred Phase 2 (P2 spec NL-LEARN-API-PLAN-001) — UI button
+  // disabled, không call BE để tránh 404 noise trên prod.
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Hồ Sơ Siêu Hình Học">
@@ -121,8 +119,12 @@ export function MetaphysicalModal({
           </p>
         </div>
 
-        <Button className="w-full" onClick={handleDownloadPdf}>
-          Tải Hồ Sơ PDF ↓
+        <Button
+          className="w-full"
+          disabled
+          title="Tính năng đang được hoàn thiện"
+        >
+          Tải Hồ Sơ PDF · Sắp ra mắt
         </Button>
       </div>
     </BottomSheet>
