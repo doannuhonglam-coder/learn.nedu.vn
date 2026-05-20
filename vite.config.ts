@@ -110,13 +110,35 @@ export default defineConfig({
       workbox: {
         // Precache tất cả built assets — Workbox tự sinh manifest.
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
-        // Skip MSW worker — KHÔNG precache, KHÔNG để Workbox handle.
+        // vite-plugin-pwa default `navigateFallback: 'index.html'` (cache-only)
+        // chính là root cause ERR_FAILED khi deploy mới — precache stale →
+        // NavigationRoute không serve được. Re-set explicit + denylist match
+        // mọi URL → auto NavigationRoute không bao giờ fire → nav requests
+        // rơi xuống NetworkFirst rule trong runtimeCaching bên dưới.
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/mockServiceWorker\.js$/],
+        navigateFallbackDenylist: [/.+/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true, // autoUpdate mode — SW mới activate ngay, user reload sẽ thấy version mới
         runtimeCaching: [
+          {
+            // Navigation requests (top-level page loads) — NetworkFirst để
+            // KHÔNG dính stale precache 503 sau mỗi deploy. Khi precache
+            // install fail (asset hash cũ), navigation vẫn fetch được HTML
+            // mới từ network. Offline thì fallback runtime cache (sau lần
+            // visit đầu thành công).
+            urlPattern: ({ request, url }) =>
+              request.mode === 'navigate' &&
+              !url.pathname.startsWith('/api/') &&
+              url.pathname !== '/mockServiceWorker.js',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'navigation',
+              networkTimeoutSeconds: 3,
+              cacheableResponse: { statuses: [200] },
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
           {
             // API calls: KHÔNG cache — lesson progress, auth, payment phải tươi.
             // Pattern build từ VITE_API_URL build-time, inlined vào SW.
