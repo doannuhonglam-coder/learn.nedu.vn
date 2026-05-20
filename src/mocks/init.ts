@@ -2,7 +2,7 @@
 //
 // Hai mode rõ ràng, không half-state:
 //   - VITE_ENABLE_MOCKING=true  → start MSW, MSW intercept mọi /api/* + /auth/*
-//   - VITE_ENABLE_MOCKING=false → unregister mọi SW + xoá cache → request đi
+//   - VITE_ENABLE_MOCKING=false → unregister MSW worker (CHỈ MSW) → request đi
 //     thẳng tới real BE
 //
 // MSW chỉ chạy trên localhost (service worker yêu cầu HTTPS hoặc localhost).
@@ -13,48 +13,54 @@ import { env } from '@shared/config/env'
 const RELOAD_FLAG = 'msw_cleanup_reloaded'
 
 /**
- * Gỡ service worker MSW + cache khi user toggle VITE_ENABLE_MOCKING=true → false.
+ * Gỡ MSW worker khi user toggle VITE_ENABLE_MOCKING=true → false.
  *
  * Vòng đời Service Worker:
  *   SW persist ở browser ngay cả sau khi code không còn gọi worker.start().
  *   Khi tab load mới, SW cũ đã ACTIVE và intercept request NGAY — trước cả khi
  *   JS app kịp chạy unregister. Vì vậy phải unregister + reload 1 lần.
  *
+ * QUAN TRỌNG: chỉ unregister MSW worker (`/mockServiceWorker.js`), KHÔNG đụng
+ * PWA workbox SW (`/sw.js`). Code cũ unregister tất cả SW + xóa tất cả caches
+ * → blast cả PWA → cache rỗng, mất offline + extra reload mỗi page load.
+ *
  * `RELOAD_FLAG` trong sessionStorage chặn loop reload vô hạn.
  */
+function isMswScriptURL(url: string | null | undefined): boolean {
+  return !!url && url.endsWith('/mockServiceWorker.js')
+}
+
 async function cleanupLegacyMockWorker() {
   let needsReload = false
 
   if ('serviceWorker' in navigator) {
     try {
       const regs = await navigator.serviceWorker.getRegistrations()
-      if (regs.length > 0) {
+      // Chỉ MSW worker, không động vào PWA SW.
+      const mswRegs = regs.filter(
+        (r) =>
+          isMswScriptURL(r.active?.scriptURL) ||
+          isMswScriptURL(r.waiting?.scriptURL) ||
+          isMswScriptURL(r.installing?.scriptURL),
+      )
+      if (mswRegs.length > 0) {
         needsReload = true
-        await Promise.all(regs.map((r) => r.unregister()))
+        await Promise.all(mswRegs.map((r) => r.unregister()))
       }
     } catch {
       /* ignore */
     }
   }
 
-  // Xoá Cache Storage (SW có thể đã lưu response cũ).
-  if ('caches' in window) {
-    try {
-      const keys = await caches.keys()
-      if (keys.length > 0) {
-        needsReload = true
-        await Promise.all(keys.map((k) => caches.delete(k)))
-      }
-    } catch {
-      /* ignore */
-    }
-  }
+  // MSW không tạo Cache Storage entry — chỉ intercept qua fetch event.
+  // Workbox precache outdated tự handle qua `cleanupOutdatedCaches: true`.
+  // → Không xóa caches ở đây để giữ PWA runtime cache (navigation, fonts, images).
 
   if (needsReload && !sessionStorage.getItem(RELOAD_FLAG)) {
     sessionStorage.setItem(RELOAD_FLAG, '1')
-    console.info('[mocks] Legacy MSW worker + caches cleared — reloading to detach.')
+    console.info('[mocks] Legacy MSW worker unregistered — reloading to detach.')
     window.location.reload()
-    // Treo bootstrap để React không render với SW cũ còn active trong tab hiện tại.
+    // Treo bootstrap để React không render với MSW SW cũ còn active.
     await new Promise(() => {})
   } else {
     sessionStorage.removeItem(RELOAD_FLAG)
