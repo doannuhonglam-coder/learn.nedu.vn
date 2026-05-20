@@ -8,6 +8,10 @@ const EnvSchema = z.object({
   VITE_ENABLE_MOCKING: z.enum(['true', 'false']).default('false'),
   VITE_GA4_ID: z.string().default(''),
   VITE_CLARITY_ID: z.string().default(''),
+  // Cloudflare Stream customer subdomain — vd "customer-abc123". Lấy ở
+  // dashboard Stream → click 1 video → tab Embed → phần trước
+  // ".cloudflarestream.com". Để rỗng = mock mode (player không render).
+  VITE_CF_STREAM_SUBDOMAIN: z.string().default(''),
 })
 
 const parsed = EnvSchema.safeParse({
@@ -16,6 +20,7 @@ const parsed = EnvSchema.safeParse({
   VITE_ENABLE_MOCKING: import.meta.env.VITE_ENABLE_MOCKING,
   VITE_GA4_ID: import.meta.env.VITE_GA4_ID,
   VITE_CLARITY_ID: import.meta.env.VITE_CLARITY_ID,
+  VITE_CF_STREAM_SUBDOMAIN: import.meta.env.VITE_CF_STREAM_SUBDOMAIN,
 })
 
 if (!parsed.success) {

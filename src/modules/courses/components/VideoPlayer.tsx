@@ -1,7 +1,8 @@
-import { useRef, useCallback } from 'react'
+import { useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { coursesService } from '../services/courses.service'
 import { toast } from '../../../shared/components/ui/Toast'
+import { env } from '../../../shared/config/env'
 
 interface VideoPlayerProps {
   streamId: string
@@ -24,37 +25,39 @@ export function VideoPlayer({ streamId, signedToken, lessonId }: VideoPlayerProp
     },
   })
 
-  const handleTimeUpdate = useCallback((e: React.SyntheticEvent<HTMLIFrameElement>) => {
-    // In real implementation, this would use Stream Player API
-    // For now, we simulate with a click-to-complete button
-    void e
-  }, [])
-
   const handleMarkComplete = () => {
     if (hasReported.current) return
     hasReported.current = true
     progressMutation.mutate()
   }
 
+  // CF Stream signed URL pattern: token THAY THẾ video uid trong path.
+  // Token claims chứa sub=video_uid để CF resolve. Xem NL-LEARN-VIDEO-CF-STREAM-001.
+  const subdomain = env.VITE_CF_STREAM_SUBDOMAIN
+  const iframeSrc = subdomain
+    ? `https://${subdomain}.cloudflarestream.com/${signedToken}/iframe`
+    : null
+
   return (
     <div className="space-y-3">
       <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
-        {/* Cloudflare Stream embed - in production uses signed token */}
-        <iframe
-          src={`https://customer-placeholder.cloudflarestream.com/${streamId}/iframe?token=${signedToken}&poster=https://placehold.co/640x360/1a1a2e/c8a951?text=Video`}
-          className="absolute inset-0 w-full h-full"
-          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-          allowFullScreen
-          onLoad={handleTimeUpdate}
-          title="Video bài học"
-        />
-        {/* Mock overlay for development */}
-        <div className="absolute inset-0 flex items-center justify-center bg-brand-dark/80">
-          <div className="text-center text-white">
-            <p className="text-sm opacity-60 mb-2">Mock Video Player</p>
-            <p className="text-xs opacity-40 mb-3">Stream ID: {streamId}</p>
+        {iframeSrc ? (
+          <iframe
+            src={iframeSrc}
+            className="absolute inset-0 w-full h-full"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+            title="Video bài học"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-center text-white/70 text-sm">
+            <div>
+              <p>Video player chưa được cấu hình.</p>
+              <p className="text-xs opacity-60 mt-1">Set VITE_CF_STREAM_SUBDOMAIN trong .env.</p>
+              <p className="text-xs opacity-40 mt-2">Stream ID: {streamId}</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <button
         onClick={handleMarkComplete}
