@@ -29,7 +29,10 @@ export function RecentCoursesList({ courses, onOpenCourse }: RecentCoursesListPr
 
       <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
         {courses.map((course) => {
-          const badge = badgeStyles[course.course_type]
+          // Fallback `on_demand` cho course_type ngoài enum FE — BE đáng lẽ
+          // normalize qua toCourseType() rồi, nhưng giữ guard này để 1 row lạ
+          // không sập cả HomePage (lookup undefined → đọc .bg → throw).
+          const badge = badgeStyles[course.course_type] ?? badgeStyles.on_demand
           return (
             <button
               key={course.id}

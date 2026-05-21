@@ -33,7 +33,9 @@ function calcNights(startISO: string, endISO: string): { days: number; nights: n
 }
 
 export function CourseCard({ course, onOpenCourse }: CourseCardProps) {
-  const config = typeConfig[course.course_type]
+  // Fallback `on_demand` cho course_type ngoài enum — guard cùng pattern với
+  // RecentCoursesList để 1 row lạ không sập cả listing /courses.
+  const config = typeConfig[course.course_type] ?? typeConfig.on_demand
   // BE Phase 1 không expose enrollment_status — derive completion từ progress.
   const isCompleted = course.progress_percent >= 100
 
