@@ -34,11 +34,13 @@ export default function CallbackPage() {
         const message =
           error === 'signup_not_allowed'
             ? 'Email chưa được đăng ký. Liên hệ tư vấn viên Nedu để mua khoá học trước.'
-            : error === 'oauth_failed'
-              ? 'Đăng nhập Google thất bại, vui lòng thử lại'
-              : error === 'cancelled'
-                ? 'Bạn đã huỷ đăng nhập Google'
-                : 'Có lỗi xảy ra trong quá trình đăng nhập'
+            : error === 'oauth_email_unverified'
+              ? 'Email Google của bạn chưa được xác minh. Vào Google xác minh email rồi đăng nhập lại.'
+              : error === 'oauth_failed'
+                ? 'Đăng nhập Google thất bại, vui lòng thử lại'
+                : error === 'cancelled'
+                  ? 'Bạn đã huỷ đăng nhập Google'
+                  : 'Có lỗi xảy ra trong quá trình đăng nhập'
         toast(message, 'error')
         navigate('/login', { replace: true })
         return
